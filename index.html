@@ -1,0 +1,3950 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tide — Hydration Reminder</title>
+    <meta
+      name="description"
+      content="A calm, compact desktop hydration tracker with customizable reminder timers, Web Audio water chimes, OS notifications, and multi-monitor popup alerts."
+    />
+    <meta property="og:title" content="Tide — Hydration Reminder" />
+    <meta
+      property="og:description"
+      content="A calm, compact desktop hydration tracker with customizable reminder timers, Web Audio water chimes, OS notifications, and multi-monitor popup alerts."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%230284c7' d='M16 3C16 3 6 14.2 6 20.5C6 26.02 10.48 30 16 30C21.52 30 26 26.02 26 20.5C26 14.2 16 3 16 3Z'/%3E%3Cpath fill='%237dd3fc' fill-opacity='0.5' d='M12 20.5C12 18 14 14.2 16 11.5C15 15 14 18.2 14.5 21C15 23.2 17 24.5 19 24.5C15.5 26 12 23.8 12 20.5Z'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --surface-subtle: #f1f5f9;
+        --surface-header: rgba(255, 255, 255, 0.9);
+        --surface-gauge: #eff8ff;
+        --surface-readout: rgba(255, 255, 255, 0.88);
+        --border: #e2e8f0;
+        --border-strong: #cbd5e1;
+        --border-subtle: rgba(226, 232, 240, 0.85);
+
+        --text: #0f172a;
+        --text-secondary: #334155;
+        --text-muted: #64748b;
+
+        --accent: #0284c7;
+        --accent-hover: #0369a1;
+        --accent-text: #ffffff;
+        --accent-soft: #f0f9ff;
+        --accent-soft-hover: #e0f2fe;
+        --accent-soft-border: #bae6fd;
+        --accent-soft-text: #075985;
+
+        --wave-back: #38bdf8;
+        --wave-front: #0284c7;
+        --water-top: #0284c7;
+        --water-bottom: #0e7490;
+
+        --bar-track: #e2e8f0;
+        --bar-past: #94a3b8;
+        --status-ok: #047857;
+        --status-warn: #b45309;
+        --danger: #e11d48;
+        --danger-hover: #be123c;
+        --switch-off: #cbd5e1;
+
+        --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.05);
+        --shadow-modal: 0 24px 48px -12px rgba(2, 16, 36, 0.55);
+      }
+
+      html.dark {
+        --bg: #08121e;
+        --surface: #0e1b2a;
+        --surface-subtle: #08121e;
+        --surface-header: rgba(8, 18, 30, 0.9);
+        --surface-gauge: #0c1c2e;
+        --surface-readout: rgba(8, 18, 30, 0.84);
+        --border: #1e293b;
+        --border-strong: #334155;
+        --border-subtle: rgba(30, 41, 59, 0.85);
+
+        --text: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+
+        --accent: #38bdf8;
+        --accent-hover: #7dd3fc;
+        --accent-text: #082f49;
+        --accent-soft: rgba(12, 74, 110, 0.36);
+        --accent-soft-hover: rgba(12, 74, 110, 0.56);
+        --accent-soft-border: rgba(7, 89, 133, 0.8);
+        --accent-soft-text: #bae6fd;
+
+        --wave-back: #0ea5e9;
+        --wave-front: #0284c7;
+        --water-top: #0284c7;
+        --water-bottom: #075985;
+
+        --bar-track: #1e293b;
+        --bar-past: #475569;
+        --status-ok: #34d399;
+        --status-warn: #fbbf24;
+        --danger: #f43f5e;
+        --danger-hover: #e11d48;
+        --switch-off: #334155;
+
+        --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font-sans);
+        background-color: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        transition: background-color 0.2s ease, color 0.2s ease;
+      }
+
+      button,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+
+      button:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .mono {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* Container width switching (Wide vs Compact Corner Mode) */
+      .container {
+        width: 100%;
+        max-width: 980px;
+        margin: 0 auto;
+        padding-left: 20px;
+        padding-right: 20px;
+        transition: max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      body.compact-mode .container {
+        max-width: 420px;
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      /* Strict 3-Zone Top Bar */
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: var(--surface-header);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .topbar-inner {
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .brand {
+        font-family: var(--font-display);
+        font-size: 1.125rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--accent);
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+
+      .nav-link {
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 6px 0;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .nav-link:hover {
+        color: var(--text);
+      }
+
+      .nav-link.active {
+        color: var(--text);
+        border-bottom-color: var(--accent);
+      }
+
+      .btn-header-cta {
+        min-height: 36px;
+        padding: 7px 14px;
+        border-radius: 10px;
+        border: none;
+        background: var(--accent);
+        color: var(--accent-text);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: background-color 0.15s ease, transform 0.12s ease;
+      }
+
+      .btn-header-cta:hover {
+        background: var(--accent-hover);
+      }
+
+      .btn-header-cta:active {
+        transform: scale(0.98);
+      }
+
+      /* Main Workspace */
+      .main-content {
+        flex: 1;
+        padding-top: 22px;
+        padding-bottom: 36px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      /* Quiet Status & Workspace View Strip */
+      .status-strip {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px 16px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border-subtle);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      .status-meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px 10px;
+      }
+
+      .status-date {
+        font-weight: 600;
+        color: var(--text);
+        white-space: nowrap;
+      }
+
+      .status-item {
+        white-space: nowrap;
+      }
+
+      .status-ok {
+        font-weight: 600;
+        color: var(--status-ok);
+      }
+
+      .status-warn {
+        font-weight: 600;
+        color: var(--status-warn);
+      }
+
+      .status-link {
+        background: none;
+        border: none;
+        padding: 0;
+        color: var(--accent);
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        cursor: pointer;
+      }
+
+      .status-link:hover {
+        color: var(--accent-hover);
+      }
+
+      .view-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .btn-icon-text {
+        min-height: 34px;
+        padding: 5px 10px;
+        border-radius: 9px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .btn-icon-text:hover {
+        background: var(--surface-subtle);
+        color: var(--text);
+      }
+
+      .btn-icon-only {
+        min-height: 34px;
+        min-width: 34px;
+        padding: 0;
+        border-radius: 9px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text-secondary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .btn-icon-only:hover {
+        background: var(--surface-subtle);
+        color: var(--text);
+      }
+
+      /* Midnight Rollover Notice */
+      .midnight-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: var(--accent-soft);
+        border: 1px solid var(--accent-soft-border);
+        color: var(--accent-soft-text);
+        font-size: 0.75rem;
+      }
+
+      /* Responsive 2-Column Grid -> Single Column in Compact Mode or Mobile */
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+
+      .col-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      body.compact-mode .dashboard-grid,
+      .dashboard-grid.single-col {
+        grid-template-columns: 1fr;
+      }
+
+      @media (max-width: 760px) {
+        .dashboard-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Panel Surface (Single Elevation, Hairline Border) */
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px 22px;
+      }
+
+      body.compact-mode .panel {
+        padding: 16px 18px;
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .panel-title {
+        font-family: var(--font-display);
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text);
+        line-height: 1.3;
+      }
+
+      .panel-subtitle {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin: 3px 0 0;
+      }
+
+      /* Goal Edit Button & Inline Editor */
+      .btn-outline-sm {
+        min-height: 36px;
+        padding: 6px 12px;
+        border-radius: 9px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .btn-outline-sm:hover {
+        background: var(--surface-subtle);
+        color: var(--text);
+      }
+
+      .goal-editor {
+        border-top: 1px solid var(--border-subtle);
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 14px 0;
+        margin-bottom: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .goal-input-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .text-input {
+        min-height: 40px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border-strong);
+        background: var(--surface-subtle);
+        color: var(--text);
+        font-size: 0.875rem;
+        width: 100%;
+        min-width: 0;
+      }
+
+      .text-input:focus {
+        border-color: var(--accent);
+        outline: none;
+      }
+
+      .goal-presets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .preset-btn {
+        min-height: 32px;
+        padding: 4px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface-subtle);
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .preset-btn:hover {
+        border-color: var(--accent);
+        color: var(--text);
+      }
+
+      .preset-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-text);
+        font-weight: 600;
+      }
+
+      /* Animated Water Fill Gauge */
+      .water-gauge-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+
+      .water-vessel {
+        position: relative;
+        width: 100%;
+        height: 184px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--surface-gauge);
+        border: 1px solid var(--border);
+        transition: height 0.25s ease;
+      }
+
+      body.compact-mode .water-vessel {
+        height: 148px;
+      }
+
+      .vessel-ticks {
+        position: absolute;
+        top: 12px;
+        bottom: 12px;
+        right: 12px;
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        font-size: 10px;
+        color: var(--text-muted);
+        opacity: 0.75;
+        pointer-events: none;
+      }
+
+      .water-fill-layer {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 100%;
+        transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform;
+      }
+
+      .wave-strip {
+        position: absolute;
+        left: 0;
+        width: 200%;
+        height: 24px;
+      }
+
+      .wave-strip svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .wave-back {
+        top: -16px;
+        opacity: 0.55;
+        animation: wave-slide-reverse 4.8s linear infinite;
+      }
+
+      .wave-back svg {
+        fill: var(--wave-back);
+      }
+
+      .wave-front {
+        top: -12px;
+        animation: wave-slide 7s linear infinite;
+      }
+
+      .wave-front svg {
+        fill: var(--wave-front);
+      }
+
+      .water-body {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(180deg, var(--water-top) 0%, var(--water-bottom) 100%);
+      }
+
+      .bubble-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 12;
+      }
+
+      .bubble {
+        position: absolute;
+        bottom: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.58);
+        animation: bubble-rise 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      .vessel-readout-wrap {
+        position: relative;
+        z-index: 20;
+        height: 100%;
+        padding: 16px;
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .vessel-readout {
+        background: var(--surface-readout);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 14px;
+      }
+
+      .intake-big {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+      }
+
+      .intake-value {
+        font-size: 1.875rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        line-height: 1.1;
+      }
+
+      body.compact-mode .intake-value {
+        font-size: 1.5rem;
+      }
+
+      .intake-goal {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-muted);
+      }
+
+      .intake-sub {
+        margin-top: 4px;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .intake-pct {
+        font-weight: 600;
+        color: var(--accent);
+      }
+
+      /* Linear Progress Bar */
+      .linear-progress {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .progress-track {
+        height: 7px;
+        width: 100%;
+        border-radius: 999px;
+        background: var(--bar-track);
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        width: 100%;
+        border-radius: 999px;
+        background: var(--accent);
+        transform-origin: left center;
+        transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .progress-labels {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+      }
+
+      /* Quick-Add Buttons */
+      .quick-add-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .btn-quick {
+        min-height: 54px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        border: none;
+        background: var(--accent);
+        color: var(--accent-text);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        cursor: pointer;
+        transition: background-color 0.15s ease, transform 0.12s ease;
+      }
+
+      .btn-quick:hover {
+        background: var(--accent-hover);
+      }
+
+      .btn-quick:active {
+        transform: scale(0.97);
+      }
+
+      .btn-quick-amount {
+        font-size: 0.875rem;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .btn-quick-caption {
+        font-size: 0.6875rem;
+        opacity: 0.85;
+        white-space: nowrap;
+      }
+
+      body.compact-mode .btn-quick-caption {
+        display: none;
+      }
+
+      .tracker-footer-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 12px;
+        min-height: 36px;
+      }
+
+      .btn-ghost {
+        min-height: 36px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .btn-ghost:hover:not(:disabled) {
+        background: var(--surface-subtle);
+        color: var(--text);
+      }
+
+      .btn-ghost:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .custom-add-form {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .custom-add-form .text-input {
+        width: 82px;
+        min-height: 34px;
+        padding: 5px 8px;
+        font-size: 0.75rem;
+      }
+
+      /* Timer Panel */
+      .timer-status-text {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+
+      .timer-status-text.running {
+        color: var(--accent);
+      }
+
+      .timer-readout-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .timer-digits {
+        font-size: 3rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        color: var(--text);
+      }
+
+      body.compact-mode .timer-digits {
+        font-size: 2.35rem;
+      }
+
+      .timer-cycle-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+
+      .timer-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .btn-primary {
+        flex: 1;
+        min-height: 44px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        border: none;
+        background: var(--accent);
+        color: var(--accent-text);
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.15s ease, transform 0.12s ease;
+      }
+
+      .btn-primary:hover {
+        background: var(--accent-hover);
+      }
+
+      .btn-primary:active {
+        transform: scale(0.98);
+      }
+
+      .btn-primary.paused-style {
+        background: var(--text);
+        color: var(--surface);
+      }
+
+      .btn-secondary {
+        min-height: 44px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .btn-secondary:hover {
+        background: var(--surface-subtle);
+        color: var(--text);
+      }
+
+      .timer-divider {
+        border-top: 1px solid var(--border-subtle);
+        margin-top: 18px;
+        padding-top: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .field-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+
+      .interval-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .segmented {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px;
+        border-radius: 11px;
+        background: var(--surface-subtle);
+        border: 1px solid var(--border);
+      }
+
+      .seg-btn {
+        min-height: 32px;
+        padding: 4px 12px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .seg-btn:hover {
+        color: var(--text);
+      }
+
+      .seg-btn.active {
+        background: var(--surface);
+        color: var(--accent);
+        font-weight: 600;
+        box-shadow: var(--shadow-xs);
+      }
+
+      .custom-interval-form {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex: 1;
+        min-width: 120px;
+      }
+
+      .custom-interval-form .text-input {
+        min-height: 38px;
+        padding: 6px 10px;
+        font-size: 0.75rem;
+      }
+
+      .btn-test-reminder {
+        width: 100%;
+        min-height: 42px;
+        padding: 9px 14px;
+        border-radius: 11px;
+        border: 1px solid var(--accent-soft-border);
+        background: var(--accent-soft);
+        color: var(--accent-soft-text);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.15s ease;
+      }
+
+      .btn-test-reminder:hover {
+        background: var(--accent-soft-hover);
+      }
+
+      /* Alerts & Permissions Rows */
+      .setting-row {
+        padding: 15px 0;
+        border-top: 1px solid var(--border-subtle);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .setting-row:first-of-type {
+        padding-top: 14px;
+      }
+
+      .setting-row:last-of-type {
+        padding-bottom: 0;
+      }
+
+      .setting-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .setting-info {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .setting-icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--surface-subtle);
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .setting-icon-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: var(--surface-subtle);
+        border: 1px solid var(--border);
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+
+      .setting-icon-btn.muted {
+        color: var(--text-muted);
+      }
+
+      .setting-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text);
+        line-height: 1.3;
+      }
+
+      .setting-desc {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+
+      .volume-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .volume-slider {
+        flex: 1;
+        accent-color: var(--accent);
+        cursor: pointer;
+        height: 6px;
+      }
+
+      .segmented.compact-seg {
+        padding: 2px;
+        gap: 2px;
+      }
+
+      .segmented.compact-seg .seg-btn {
+        min-height: 28px;
+        padding: 2px 8px;
+        font-size: 0.6875rem;
+      }
+
+      /* Accessible Switch Toggle */
+      .switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        border-radius: 999px;
+        border: none;
+        padding: 2px;
+        background: var(--switch-off);
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background-color 0.2s ease;
+      }
+
+      .switch[aria-checked="true"] {
+        background: var(--accent);
+      }
+
+      .switch-thumb {
+        display: block;
+        width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        background: #ffffff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .switch[aria-checked="true"] .switch-thumb {
+        transform: translateX(20px);
+      }
+
+      .permission-helper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      .popup-mode-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+      }
+
+      .screens-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding-top: 4px;
+      }
+
+      .screens-list-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+      }
+
+      .screen-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: var(--surface-subtle);
+        border: 1px solid var(--border);
+        font-size: 0.75rem;
+      }
+
+      .screen-item-info {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .screen-item-name {
+        font-weight: 600;
+        color: var(--text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .screen-item-coords {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+      }
+
+      .screen-test-btn {
+        min-height: 30px;
+        padding: 4px 10px;
+        border-radius: 7px;
+        border: 1px solid var(--border-strong);
+        background: var(--surface);
+        color: var(--text-secondary);
+        font-size: 0.7rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .screen-test-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .screen-hint {
+        font-size: 0.72rem;
+        line-height: 1.45;
+        color: var(--text-muted);
+        padding: 8px 10px;
+        border-radius: 9px;
+        background: var(--surface-subtle);
+        border: 1px solid var(--border);
+      }
+
+      .btn-soft-sm {
+        min-height: 34px;
+        padding: 5px 12px;
+        border-radius: 9px;
+        border: 1px solid var(--accent-soft-border);
+        background: var(--accent-soft);
+        color: var(--accent-soft-text);
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: background-color 0.15s ease;
+      }
+
+      .btn-soft-sm:hover {
+        background: var(--accent-soft-hover);
+      }
+
+      .btn-accent-sm {
+        min-height: 36px;
+        padding: 6px 12px;
+        border-radius: 9px;
+        border: none;
+        background: var(--accent);
+        color: var(--accent-text);
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .btn-accent-sm:hover {
+        background: var(--accent-hover);
+      }
+
+      .btn-danger-sm {
+        min-height: 34px;
+        padding: 5px 12px;
+        border-radius: 9px;
+        border: none;
+        background: var(--danger);
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .btn-danger-sm:hover {
+        background: var(--danger-hover);
+      }
+
+      /* 7-Day Bar Chart & Log List */
+      .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 8px;
+        height: 144px;
+        align-items: end;
+        padding-top: 8px;
+      }
+
+      .chart-col {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+      }
+
+      .chart-val {
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+
+      .chart-bar-track {
+        width: 100%;
+        max-width: 34px;
+        flex: 1;
+        background: var(--surface-subtle);
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        align-items: flex-end;
+      }
+
+      .chart-bar-fill {
+        width: 100%;
+        border-radius: 6px 6px 0 0;
+        background: var(--bar-past);
+        transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .chart-bar-fill.today {
+        background: var(--accent);
+        opacity: 0.85;
+      }
+
+      .chart-bar-fill.met {
+        background: var(--accent);
+        opacity: 1;
+      }
+
+      .chart-day {
+        font-size: 11px;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+
+      .chart-day.today {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      .log-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-top: 1px solid var(--border-subtle);
+      }
+
+      .log-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 11px 0;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+
+      .log-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .log-item-main {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .log-amount {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--accent);
+        white-space: nowrap;
+      }
+
+      .log-meta {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .btn-delete {
+        min-width: 34px;
+        min-height: 34px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .btn-delete:hover {
+        background: var(--surface-subtle);
+        color: var(--danger);
+      }
+
+      .empty-log {
+        border-top: 1px solid var(--border-subtle);
+        padding: 26px 0 8px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+      }
+
+      /* High-Contrast In-App Alert Modal */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        background: rgba(2, 12, 27, 0.68);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .modal-card {
+        width: 100%;
+        max-width: 420px;
+        border-radius: 18px;
+        background: #082f49;
+        border: 1px solid #075985;
+        color: #ffffff;
+        padding: 24px;
+        box-shadow: var(--shadow-modal);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .modal-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .modal-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #7dd3fc;
+      }
+
+      .modal-close {
+        min-width: 36px;
+        min-height: 36px;
+        border-radius: 9px;
+        border: none;
+        background: transparent;
+        color: #bae6fd;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .modal-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+      }
+
+      .modal-title {
+        font-family: var(--font-display);
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        letter-spacing: -0.02em;
+      }
+
+      .modal-body {
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.55;
+        color: rgba(224, 242, 254, 0.92);
+      }
+
+      .modal-summary {
+        margin: 0;
+        padding-top: 12px;
+        border-top: 1px solid rgba(56, 189, 248, 0.25);
+        font-size: 0.75rem;
+        color: #bae6fd;
+      }
+
+      .modal-blocked-note {
+        margin: 0;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: rgba(120, 53, 15, 0.45);
+        border: 1px solid rgba(217, 119, 6, 0.55);
+        color: #fde68a;
+        font-size: 0.75rem;
+        line-height: 1.45;
+      }
+
+      .modal-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-top: 4px;
+      }
+
+      .btn-modal-primary {
+        flex: 1;
+        min-height: 46px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        border: none;
+        background: #38bdf8;
+        color: #082f49;
+        font-size: 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.15s ease, transform 0.12s ease;
+      }
+
+      .btn-modal-primary:hover {
+        background: #7dd3fc;
+      }
+
+      .btn-modal-primary:active {
+        transform: scale(0.98);
+      }
+
+      .btn-modal-secondary {
+        min-height: 46px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        border: 1px solid #0369a1;
+        background: transparent;
+        color: #e0f2fe;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .btn-modal-secondary:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      @keyframes wave-slide {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+
+      @keyframes wave-slide-reverse {
+        0% {
+          transform: translateX(-50%);
+        }
+        100% {
+          transform: translateX(0);
+        }
+      }
+
+      @keyframes bubble-rise {
+        0% {
+          transform: translateY(0) scale(0.7);
+          opacity: 0;
+        }
+        20% {
+          opacity: 0.72;
+        }
+        100% {
+          transform: translateY(-90px) scale(1.1);
+          opacity: 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .wave-back,
+        .wave-front,
+        .bubble {
+          animation: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Strict 3-Zone Top Bar -->
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <button type="button" id="brandBtn" class="brand">Tide</button>
+
+        <nav class="nav-links" aria-label="Primary sections">
+          <button type="button" id="tabTracker" class="nav-link active">Tracker</button>
+          <button type="button" id="tabHistory" class="nav-link">History</button>
+        </nav>
+
+        <button type="button" id="headerTestBtn" class="btn-header-cta">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10.268 21a2 2 0 0 0 3.464 0" />
+            <path d="M22 8c0-2.3-.8-4.3-2-6" />
+            <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
+            <path d="M4 2C2.8 3.7 2 5.7 2 8" />
+          </svg>
+          <span id="headerTestLabel">Test Reminder</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="container main-content">
+      <!-- Compact Permission Status & Workspace View Strip -->
+      <div class="status-strip">
+        <div class="status-meta">
+          <span id="todayDateLabel" class="status-date"></span>
+          <span aria-hidden="true">·</span>
+          <span class="status-item">
+            Notifications: <span id="statusNotifSlot"></span>
+          </span>
+          <span aria-hidden="true">·</span>
+          <span class="status-item">
+            Multi-screen: <span id="statusScreenSlot"></span>
+          </span>
+        </div>
+
+        <div class="view-actions">
+          <button
+            type="button"
+            id="compactToggleBtn"
+            class="btn-icon-text"
+            title="Switch between wide desktop and compact corner layout"
+          >
+            <span id="compactIcon"></span>
+            <span id="compactLabel">Compact</span>
+          </button>
+          <button
+            type="button"
+            id="themeToggleBtn"
+            class="btn-icon-only"
+            aria-label="Toggle dark mode"
+          >
+            <span id="themeIcon"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Automatic Midnight Rollover Banner -->
+      <div id="midnightBanner" class="midnight-banner hidden">
+        <span>New day started — daily hydration progress reset to 0 ml.</span>
+        <button type="button" id="dismissMidnightBtn" class="status-link">Dismiss</button>
+      </div>
+
+      <!-- TRACKER VIEW -->
+      <div id="trackerView" class="dashboard-grid">
+        <!-- Left Column -->
+        <div id="leftColumn" class="col-stack">
+          <!-- Daily Hydration Tracker Panel -->
+          <section class="panel" aria-labelledby="dailyHydrationTitle">
+            <div class="panel-header">
+              <div>
+                <h2 id="dailyHydrationTitle" class="panel-title">Daily Hydration</h2>
+                <p class="panel-subtitle">Resets automatically at midnight</p>
+              </div>
+              <button type="button" id="editGoalBtn" class="btn-outline-sm">
+                <span id="goalBtnText" class="mono">Goal: 2,500 ml</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Inline Goal Editor -->
+            <form id="goalEditorForm" class="goal-editor hidden">
+              <div class="goal-input-row">
+                <label for="goalInput" class="sr-only">Daily goal in milliliters</label>
+                <input
+                  id="goalInput"
+                  type="number"
+                  min="500"
+                  max="10000"
+                  step="50"
+                  class="text-input mono"
+                />
+                <span class="mono" style="font-size: 0.75rem; color: var(--text-muted)">ml</span>
+                <button type="submit" class="btn-accent-sm">Save</button>
+                <button type="button" id="cancelGoalBtn" class="btn-outline-sm">Cancel</button>
+              </div>
+              <div class="goal-presets" id="goalPresets"></div>
+            </form>
+
+            <!-- Fluid Water Fill Gauge -->
+            <div class="water-gauge-wrap">
+              <div
+                id="waterVessel"
+                class="water-vessel"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="2500"
+                aria-valuenow="0"
+                aria-label="Daily water intake progress"
+              >
+                <div class="vessel-ticks mono" aria-hidden="true">
+                  <span>100%</span>
+                  <span>50%</span>
+                  <span>0%</span>
+                </div>
+
+                <div id="waterFillLayer" class="water-fill-layer" style="transform: translateY(100%)">
+                  <div class="wave-strip wave-back">
+                    <svg viewBox="0 0 1200 60" preserveAspectRatio="none">
+                      <path d="M0,30 C150,55 300,5 450,30 C600,55 750,5 900,30 C1050,55 1125,18 1200,30 L1200,60 L0,60 Z" />
+                    </svg>
+                  </div>
+                  <div class="wave-strip wave-front">
+                    <svg viewBox="0 0 1200 60" preserveAspectRatio="none">
+                      <path d="M0,24 C180,0 360,52 600,24 C840,-4 1020,48 1200,24 L1200,60 L0,60 Z" />
+                    </svg>
+                  </div>
+                  <div class="water-body"></div>
+                </div>
+
+                <div id="bubbleLayer" class="bubble-layer" aria-hidden="true"></div>
+
+                <div class="vessel-readout-wrap">
+                  <div class="vessel-readout">
+                    <div class="intake-big">
+                      <span id="intakeValue" class="intake-value mono">0</span>
+                      <span id="intakeGoalText" class="intake-goal mono">/ 2,500 ml</span>
+                    </div>
+                    <div class="intake-sub">
+                      <span id="intakePct" class="intake-pct mono">0%</span>
+                      <span aria-hidden="true">·</span>
+                      <span id="remainingText">2,500 ml remaining</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="linear-progress">
+                <div class="progress-track">
+                  <div id="linearProgressFill" class="progress-fill" style="transform: scaleX(0)"></div>
+                </div>
+                <div class="progress-labels mono">
+                  <span>0 ml</span>
+                  <span id="glassesLeftText">10 glasses left (~250 ml)</span>
+                  <span id="linearGoalLabel">2,500 ml</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- One-Click Quick Add Buttons -->
+            <div class="quick-add-grid">
+              <button type="button" class="btn-quick" data-quick-ml="200">
+                <span class="btn-quick-amount mono">+200ml</span>
+                <span class="btn-quick-caption">Small glass</span>
+              </button>
+              <button type="button" class="btn-quick" data-quick-ml="350">
+                <span class="btn-quick-amount mono">+350ml</span>
+                <span class="btn-quick-caption">Mug / tumbler</span>
+              </button>
+              <button type="button" class="btn-quick" data-quick-ml="500">
+                <span class="btn-quick-amount mono">+500ml</span>
+                <span class="btn-quick-caption">Water bottle</span>
+              </button>
+            </div>
+
+            <!-- Custom Amount + Undo Last -->
+            <div class="tracker-footer-row">
+              <button type="button" id="showCustomAddBtn" class="btn-ghost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h14" /><path d="M12 5v14" />
+                </svg>
+                <span>Custom amount</span>
+              </button>
+
+              <form id="customAddForm" class="custom-add-form hidden">
+                <label for="customMlInput" class="sr-only">Custom water amount in ml</label>
+                <input
+                  id="customMlInput"
+                  type="number"
+                  min="10"
+                  max="3000"
+                  step="10"
+                  value="250"
+                  class="text-input mono"
+                />
+                <button type="submit" class="btn-accent-sm">Add ml</button>
+                <button type="button" id="closeCustomAddBtn" class="btn-ghost" aria-label="Close custom amount">✕</button>
+              </form>
+
+              <button type="button" id="undoLastBtn" class="btn-ghost" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
+                <span>Undo last</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- Alerts & Multi-Screen Popups Panel (moves gracefully in compact mode) -->
+          <section id="alertsPanel" class="panel" aria-labelledby="alertsTitle">
+            <div class="panel-header" style="margin-bottom: 4px">
+              <div>
+                <h2 id="alertsTitle" class="panel-title">Alerts &amp; Multi-Screen Popups</h2>
+                <p class="panel-subtitle">Sound chime, native OS notifications, and multi-monitor windows</p>
+              </div>
+            </div>
+
+            <!-- Sound Row -->
+            <div class="setting-row">
+              <div class="setting-head">
+                <div class="setting-info">
+                  <button
+                    type="button"
+                    id="muteToggleBtn"
+                    class="setting-icon-btn"
+                    aria-label="Mute reminder sound"
+                  >
+                    <span id="muteIcon"></span>
+                  </button>
+                  <div>
+                    <div class="setting-label">Water-drop Chime</div>
+                    <div id="volumeStatusText" class="setting-desc mono">75% volume</div>
+                  </div>
+                </div>
+                <button type="button" id="previewSoundBtn" class="btn-outline-sm">Preview</button>
+              </div>
+
+              <div class="volume-row">
+                <label for="volumeSlider" class="sr-only">Alert volume</label>
+                <input
+                  id="volumeSlider"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="75"
+                  class="volume-slider"
+                />
+                <div class="segmented compact-seg" role="group" aria-label="Alert tone">
+                  <button type="button" class="seg-btn active" data-tone="droplet">Droplet</button>
+                  <button type="button" class="seg-btn" data-tone="chime">Chime</button>
+                  <button type="button" class="seg-btn" data-tone="tide">Tide</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- OS Notifications Row -->
+            <div class="setting-row">
+              <div class="setting-head">
+                <div class="setting-info">
+                  <div class="setting-icon-box" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M10.268 21a2 2 0 0 0 3.464 0" />
+                      <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="setting-label">OS Notifications</div>
+                    <div id="notifDescText" class="setting-desc">Permission not yet requested</div>
+                  </div>
+                </div>
+
+                <div id="notifActionSlot"></div>
+              </div>
+            </div>
+
+            <!-- Multi-Screen Popups Row -->
+            <div class="setting-row">
+              <div class="setting-head">
+                <div class="setting-info">
+                  <div class="setting-icon-box" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect width="20" height="14" x="2" y="3" rx="2" />
+                      <line x1="8" x2="16" y1="21" y2="21" />
+                      <line x1="12" x2="12" y1="17" y2="21" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="setting-label">Multi-Screen Popups</div>
+                    <div id="multiScreenDescText" class="setting-desc">Checking multi-monitor support</div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  id="multiScreenSwitch"
+                  role="switch"
+                  aria-checked="true"
+                  aria-label="Toggle Multi-Screen Popups"
+                  class="switch"
+                >
+                  <span class="switch-thumb"></span>
+                </button>
+              </div>
+
+              <div id="popupModeRow" class="popup-mode-row">
+                <span>Popup window size</span>
+                <div class="segmented compact-seg" role="group" aria-label="Popup window size">
+                  <button type="button" class="seg-btn active" data-popup-size="fullscreen">Full Screen</button>
+                  <button type="button" class="seg-btn" data-popup-size="compact">Compact Box</button>
+                </div>
+              </div>
+
+              <div id="multiScreenHelper" class="permission-helper hidden">
+                <span>Allow window management access to identify both monitors and open full-screen alerts on each.</span>
+                <button type="button" id="detectScreensBtn" class="btn-soft-sm">Detect screens</button>
+              </div>
+
+              <div id="detectedScreensBox" class="screens-list hidden"></div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Right Column -->
+        <div id="rightColumn" class="col-stack">
+          <!-- Reminder Timer Panel -->
+          <section class="panel" aria-labelledby="timerTitle">
+            <div class="panel-header">
+              <div>
+                <h2 id="timerTitle" class="panel-title">Reminder Timer</h2>
+                <p id="timerSubtitle" class="panel-subtitle">Every 45 minutes</p>
+              </div>
+              <span id="timerStateBadge" class="timer-status-text">Standby</span>
+            </div>
+
+            <div class="timer-readout-row">
+              <div id="timerDigits" class="timer-digits mono">45:00</div>
+              <span id="timerCycleLabel" class="timer-cycle-label mono">45m cycle</span>
+            </div>
+
+            <div class="progress-track">
+              <div id="timerProgressFill" class="progress-fill" style="transform: scaleX(0)"></div>
+            </div>
+
+            <div class="timer-controls">
+              <button type="button" id="timerToggleBtn" class="btn-primary">
+                <span id="timerToggleIcon"></span>
+                <span id="timerToggleLabel">Start</span>
+              </button>
+              <button type="button" id="timerResetBtn" class="btn-secondary" aria-label="Reset timer">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
+                <span>Reset</span>
+              </button>
+            </div>
+
+            <div class="timer-divider">
+              <span class="field-label">Reminder interval</span>
+              <div class="interval-row">
+                <div class="segmented" role="group" aria-label="Reminder interval presets">
+                  <button type="button" class="seg-btn mono" data-interval="30">30m</button>
+                  <button type="button" class="seg-btn mono active" data-interval="45">45m</button>
+                  <button type="button" class="seg-btn mono" data-interval="60">60m</button>
+                </div>
+
+                <form id="customIntervalForm" class="custom-interval-form">
+                  <label for="customIntervalInput" class="sr-only">Custom reminder interval in minutes</label>
+                  <input
+                    id="customIntervalInput"
+                    type="number"
+                    min="1"
+                    max="240"
+                    placeholder="Custom min"
+                    class="text-input mono"
+                  />
+                  <button type="submit" id="setCustomIntervalBtn" class="btn-outline-sm">Set</button>
+                </form>
+              </div>
+
+              <button type="button" id="panelTestBtn" class="btn-test-reminder">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M10.268 21a2 2 0 0 0 3.464 0" />
+                  <path d="M22 8c0-2.3-.8-4.3-2-6" />
+                  <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
+                  <path d="M4 2C2.8 3.7 2 5.7 2 8" />
+                </svg>
+                <span>Test Reminder Now</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- Compact Recent Log Preview (visible in Wide Desktop Tracker View) -->
+          <section id="inlineHistoryPreview" class="panel" aria-labelledby="inlineLogTitle">
+            <div class="panel-header">
+              <div>
+                <h2 id="inlineLogTitle" class="panel-title">Today&apos;s Log</h2>
+                <p id="inlineLogSubtitle" class="panel-subtitle mono">0 entries · 0 ml total</p>
+              </div>
+              <button type="button" id="viewAllHistoryBtn" class="btn-outline-sm">7-day history</button>
+            </div>
+            <div id="inlineLogContainer"></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- HISTORY VIEW -->
+      <div id="historyView" class="col-stack hidden">
+        <section class="panel" aria-labelledby="trendTitle">
+          <div class="panel-header">
+            <div>
+              <h2 id="trendTitle" class="panel-title">Recent Daily Intake</h2>
+              <p class="panel-subtitle">Saved locally · Archives automatically each midnight</p>
+            </div>
+            <span id="chartGoalLabel" class="mono" style="font-size: 0.75rem; color: var(--text-muted)">Goal 2,500 ml</span>
+          </div>
+          <div id="historyChart" class="chart-grid"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="fullLogTitle">
+          <div class="panel-header">
+            <div>
+              <h2 id="fullLogTitle" class="panel-title">Today&apos;s Log</h2>
+              <p id="fullLogSubtitle" class="panel-subtitle mono">0 entries · 0 ml total</p>
+            </div>
+            <div id="resetControlsSlot"></div>
+          </div>
+          <div id="fullLogContainer"></div>
+        </section>
+      </div>
+    </main>
+
+    <!-- High-Contrast In-App Reminder Alert Modal -->
+    <div
+      id="alertModal"
+      class="modal-backdrop hidden"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="modalHeading"
+    >
+      <div class="modal-card">
+        <div class="modal-top">
+          <div class="modal-kicker">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+            </svg>
+            <span>Hydration Reminder</span>
+          </div>
+          <button type="button" id="modalCloseX" class="modal-close" aria-label="Dismiss reminder">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <h2 id="modalHeading" class="modal-title">Time to Drink Water!</h2>
+        <p id="modalProgressCopy" class="modal-body"></p>
+        <p id="modalSummaryLine" class="modal-summary hidden"></p>
+        <p id="modalBlockedNote" class="modal-blocked-note hidden">
+          Your browser blocked external popup windows. Allow popups for this site to enable multi-monitor alert windows.
+        </p>
+
+        <div class="modal-actions">
+          <button type="button" id="modalLogBtn" class="btn-modal-primary">Log +250ml &amp; Close</button>
+          <button type="button" id="modalDismissBtn" class="btn-modal-secondary">Dismiss</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        'use strict';
+
+        /* =========================================================
+           1. CONSTANTS & STORAGE HELPERS
+           ========================================================= */
+        const STORAGE_PROGRESS = 'tide_hydration_daily_v1';
+        const STORAGE_HISTORY = 'tide_hydration_history_v1';
+        const STORAGE_SETTINGS = 'tide_hydration_settings_v1';
+        const SYNC_CHANNEL = 'tide-hydration-sync-v1';
+        const DEFAULT_TITLE = 'Tide — Hydration Reminder';
+        const GOAL_PRESETS = [2000, 2500, 3000, 3500];
+
+        const DEFAULT_SETTINGS = {
+          goalMl: 2500,
+          intervalMinutes: 45,
+          soundMuted: false,
+          soundVolume: 0.75,
+          soundTone: 'droplet',
+          notificationsEnabled: true,
+          multiScreenPopupsEnabled: true,
+          popupSizeMode: 'fullscreen', // 'fullscreen' | 'compact'
+          theme: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+          compactMode: false,
+        };
+
+        function getLocalDateKey(date) {
+          const d = date || new Date();
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return y + '-' + m + '-' + day;
+        }
+
+        function getMsUntilNextMidnight() {
+          const now = new Date();
+          const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 500);
+          return Math.max(1000, next.getTime() - now.getTime());
+        }
+
+        function formatTimeShort(ts) {
+          return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatReadableDate(date) {
+          return (date || new Date()).toLocaleDateString([], {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          });
+        }
+
+        function formatShortDayLabel(dateKey) {
+          const parts = dateKey.split('-').map(Number);
+          if (parts.length !== 3) return dateKey;
+          return new Date(parts[0], parts[1] - 1, parts[2]).toLocaleDateString([], { weekday: 'short' });
+        }
+
+        function formatCountdown(totalSec) {
+          const safe = Math.max(0, Math.ceil(totalSec));
+          const hrs = Math.floor(safe / 3600);
+          const mins = Math.floor((safe % 3600) / 60);
+          const secs = safe % 60;
+          if (hrs > 0) {
+            return (
+              String(hrs).padStart(2, '0') +
+              ':' +
+              String(mins).padStart(2, '0') +
+              ':' +
+              String(secs).padStart(2, '0')
+            );
+          }
+          return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        }
+
+        function loadSettings() {
+          try {
+            const raw = localStorage.getItem(STORAGE_SETTINGS);
+            if (!raw) return Object.assign({}, DEFAULT_SETTINGS);
+            const parsed = JSON.parse(raw);
+            return Object.assign({}, DEFAULT_SETTINGS, parsed, {
+              goalMl: Math.min(10000, Math.max(500, Number(parsed.goalMl) || DEFAULT_SETTINGS.goalMl)),
+              intervalMinutes: Math.min(240, Math.max(1, Number(parsed.intervalMinutes) || DEFAULT_SETTINGS.intervalMinutes)),
+              soundVolume: Math.min(
+                1,
+                Math.max(0, typeof parsed.soundVolume === 'number' ? parsed.soundVolume : DEFAULT_SETTINGS.soundVolume)
+              ),
+            });
+          } catch {
+            return Object.assign({}, DEFAULT_SETTINGS);
+          }
+        }
+
+        function saveSettings(s) {
+          try {
+            localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(s));
+          } catch {
+            // ignore storage errors
+          }
+        }
+
+        function loadHistory() {
+          try {
+            const raw = localStorage.getItem(STORAGE_HISTORY);
+            if (!raw) return [];
+            const arr = JSON.parse(raw);
+            return Array.isArray(arr) ? arr.slice(-14) : [];
+          } catch {
+            return [];
+          }
+        }
+
+        function saveHistory(arr) {
+          try {
+            localStorage.setItem(STORAGE_HISTORY, JSON.stringify(arr.slice(-14)));
+          } catch {
+            // ignore storage errors
+          }
+        }
+
+        function archiveProgressToHistory(prog) {
+          if (!prog || prog.intakeMl <= 0) return;
+          const hist = loadHistory();
+          const idx = hist.findIndex((d) => d.dateKey === prog.dateKey);
+          const summary = {
+            dateKey: prog.dateKey,
+            intakeMl: prog.intakeMl,
+            goalMl: prog.goalMl,
+          };
+          if (idx >= 0) hist[idx] = summary;
+          else hist.push(summary);
+          hist.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+          saveHistory(hist);
+        }
+
+        function loadDailyProgress(goalMl) {
+          const todayKey = getLocalDateKey();
+          const empty = { dateKey: todayKey, intakeMl: 0, goalMl: goalMl, entries: [] };
+          try {
+            const raw = localStorage.getItem(STORAGE_PROGRESS);
+            if (!raw) {
+              saveDailyProgress(empty);
+              return { progress: empty, didReset: false };
+            }
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed.dateKey !== 'string') {
+              saveDailyProgress(empty);
+              return { progress: empty, didReset: false };
+            }
+            if (parsed.dateKey !== todayKey) {
+              archiveProgressToHistory(parsed);
+              saveDailyProgress(empty);
+              return { progress: empty, didReset: true };
+            }
+            return {
+              progress: {
+                dateKey: todayKey,
+                intakeMl: Math.max(0, Number(parsed.intakeMl) || 0),
+                goalMl: goalMl,
+                entries: Array.isArray(parsed.entries) ? parsed.entries : [],
+              },
+              didReset: false,
+            };
+          } catch {
+            saveDailyProgress(empty);
+            return { progress: empty, didReset: false };
+          }
+        }
+
+        function saveDailyProgress(prog) {
+          try {
+            localStorage.setItem(STORAGE_PROGRESS, JSON.stringify(prog));
+          } catch {
+            // ignore storage errors
+          }
+        }
+
+        /* =========================================================
+           2. WEB AUDIO API WATER-DROP / CHIME SYNTHESIZER
+           ========================================================= */
+        let sharedAudioCtx = null;
+
+        function getAudioContext() {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return null;
+          if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+            sharedAudioCtx = new Ctx();
+          }
+          return sharedAudioCtx;
+        }
+
+        async function playHydrationSound(volume, muted, tone) {
+          if (muted || volume <= 0.005) return false;
+          const ctx = getAudioContext();
+          if (!ctx) return false;
+          try {
+            if (ctx.state === 'suspended') await ctx.resume();
+            const now = ctx.currentTime;
+            const master = ctx.createGain();
+            master.gain.setValueAtTime(Math.min(1, Math.max(0.01, volume)), now);
+            master.connect(ctx.destination);
+
+            if (tone === 'chime') {
+              [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+                const t = now + i * 0.11;
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, t);
+                g.gain.setValueAtTime(0.001, t);
+                g.gain.linearRampToValueAtTime(0.28, t + 0.015);
+                g.gain.exponentialRampToValueAtTime(0.0008, t + 0.85);
+                osc.connect(g);
+                g.connect(master);
+                osc.start(t);
+                osc.stop(t + 0.9);
+              });
+            } else if (tone === 'tide') {
+              [
+                { freq: 587.33, start: 0, dur: 1.2 },
+                { freq: 880.0, start: 0.16, dur: 1.3 },
+              ].forEach((n) => {
+                const t = now + n.start;
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(n.freq, t);
+                g.gain.setValueAtTime(0.001, t);
+                g.gain.linearRampToValueAtTime(0.26, t + 0.08);
+                g.gain.exponentialRampToValueAtTime(0.0008, t + n.dur);
+                osc.connect(g);
+                g.connect(master);
+                osc.start(t);
+                osc.stop(t + n.dur + 0.05);
+              });
+            } else {
+              // Default: clear water-drop bloop + harmonic chime
+              const d1 = ctx.createOscillator();
+              const g1 = ctx.createGain();
+              d1.type = 'sine';
+              d1.frequency.setValueAtTime(520, now);
+              d1.frequency.exponentialRampToValueAtTime(1260, now + 0.085);
+              g1.gain.setValueAtTime(0.001, now);
+              g1.gain.linearRampToValueAtTime(0.45, now + 0.012);
+              g1.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+              d1.connect(g1);
+              g1.connect(master);
+              d1.start(now);
+              d1.stop(now + 0.16);
+
+              const d2 = ctx.createOscillator();
+              const g2 = ctx.createGain();
+              d2.type = 'sine';
+              d2.frequency.setValueAtTime(740, now + 0.14);
+              d2.frequency.exponentialRampToValueAtTime(1580, now + 0.22);
+              g2.gain.setValueAtTime(0.001, now + 0.14);
+              g2.gain.linearRampToValueAtTime(0.32, now + 0.155);
+              g2.gain.exponentialRampToValueAtTime(0.001, now + 0.30);
+              d2.connect(g2);
+              g2.connect(master);
+              d2.start(now + 0.14);
+              d2.stop(now + 0.32);
+
+              [
+                { freq: 659.25, start: 0.24, dur: 0.9, peak: 0.24 },
+                { freq: 987.77, start: 0.34, dur: 1.05, peak: 0.2 },
+              ].forEach((n) => {
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(n.freq, now + n.start);
+                g.gain.setValueAtTime(0.001, now + n.start);
+                g.gain.linearRampToValueAtTime(n.peak, now + n.start + 0.025);
+                g.gain.exponentialRampToValueAtTime(0.0008, now + n.start + n.dur);
+                osc.connect(g);
+                g.connect(master);
+                osc.start(now + n.start);
+                osc.stop(now + n.start + n.dur + 0.05);
+              });
+            }
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
+        async function playSipFeedback(volume, muted) {
+          if (muted || volume <= 0.005) return;
+          const ctx = getAudioContext();
+          if (!ctx) return;
+          try {
+            if (ctx.state === 'suspended') await ctx.resume();
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(480, now);
+            osc.frequency.exponentialRampToValueAtTime(980, now + 0.065);
+            g.gain.setValueAtTime(0.001, now);
+            g.gain.linearRampToValueAtTime(Math.min(0.22, volume * 0.25), now + 0.01);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+            osc.connect(g);
+            g.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.12);
+          } catch {
+            // ignore
+          }
+        }
+
+        /* =========================================================
+           3. STATE
+           ========================================================= */
+        let settings = loadSettings();
+        let progress = loadDailyProgress(settings.goalMl).progress;
+        let history = loadHistory();
+        let activeTab = 'tracker';
+        let confirmResetToday = false;
+
+        // Timer state
+        let isRunning = false;
+        let remainingSeconds = settings.intervalMinutes * 60;
+        let targetEndTime = null;
+        let timerIntervalId = null;
+
+        // Permissions & screens
+        let notifPerm = 'Notification' in window ? Notification.permission : 'unsupported';
+        let multiScreenPerm = typeof window.getScreenDetails === 'function' ? 'prompt' : 'unsupported';
+        let screenDetails = null;
+        let detectedScreensCount = 1;
+
+        // Popups & title flash
+        const activePopups = new Set();
+        let titleFlashIntervalId = null;
+        let lastPopupActionAt = 0;
+
+        /* =========================================================
+           4. SVG ICONS HELPER
+           ========================================================= */
+        const ICONS = {
+          play: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+          pause: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg>',
+          sun: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>',
+          moon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>',
+          minimize: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" x2="21" y1="10" y2="3"/><line x1="3" x2="10" y1="21" y2="14"/></svg>',
+          maximize: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg>',
+          volOn: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></svg>',
+          volOff: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>',
+          trash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
+        };
+
+        /* =========================================================
+           5. MULTI-SCREEN POPUP ENGINE & ALERTS
+           ========================================================= */
+        function startTabTitleFlash(msg) {
+          stopTabTitleFlash();
+          let showAlert = true;
+          document.title = msg;
+          titleFlashIntervalId = window.setInterval(() => {
+            document.title = showAlert ? DEFAULT_TITLE : msg;
+            showAlert = !showAlert;
+          }, 1100);
+        }
+
+        function stopTabTitleFlash() {
+          if (titleFlashIntervalId !== null) {
+            window.clearInterval(titleFlashIntervalId);
+            titleFlashIntervalId = null;
+          }
+          document.title = DEFAULT_TITLE;
+        }
+
+        function closeAllPopups() {
+          activePopups.forEach((win) => {
+            try {
+              if (win && !win.closed) win.close();
+            } catch {
+              // ignore
+            }
+          });
+          activePopups.clear();
+          try {
+            if (typeof BroadcastChannel !== 'undefined') {
+              const ch = new BroadcastChannel(SYNC_CHANNEL);
+              ch.postMessage({ type: 'CLOSE_ALL_POPUPS' });
+              ch.close();
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        function getNormalizedScreens() {
+          if (!screenDetails || !Array.isArray(screenDetails.screens) || screenDetails.screens.length === 0) {
+            return [];
+          }
+          const cur = screenDetails.currentScreen || null;
+          const seen = new Set();
+          const list = [];
+
+          screenDetails.screens.forEach((s, rawIdx) => {
+            const availLeft = Math.round(typeof s.availLeft === 'number' ? s.availLeft : (typeof s.left === 'number' ? s.left : 0));
+            const availTop = Math.round(typeof s.availTop === 'number' ? s.availTop : (typeof s.top === 'number' ? s.top : 0));
+            const availWidth = Math.round(typeof s.availWidth === 'number' ? s.availWidth : (typeof s.width === 'number' ? s.width : window.screen.availWidth));
+            const availHeight = Math.round(typeof s.availHeight === 'number' ? s.availHeight : (typeof s.height === 'number' ? s.height : window.screen.availHeight));
+            const fullLeft = Math.round(typeof s.left === 'number' ? s.left : availLeft);
+            const fullTop = Math.round(typeof s.top === 'number' ? s.top : availTop);
+            const fullWidth = Math.round(typeof s.width === 'number' ? s.width : availWidth);
+            const fullHeight = Math.round(typeof s.height === 'number' ? s.height : availHeight);
+
+            const key = availLeft + ',' + availTop + ',' + availWidth + 'x' + availHeight;
+            if (seen.has(key)) return;
+            seen.add(key);
+
+            const curLeft = cur ? Math.round(typeof cur.availLeft === 'number' ? cur.availLeft : (cur.left || 0)) : null;
+            const curTop = cur ? Math.round(typeof cur.availTop === 'number' ? cur.availTop : (cur.top || 0)) : null;
+            const curWidth = cur ? Math.round(typeof cur.availWidth === 'number' ? cur.availWidth : (cur.width || 0)) : null;
+
+            const isCurrent = Boolean(
+              cur && (s === cur || (curLeft === availLeft && curTop === availTop && curWidth === availWidth))
+            );
+
+            list.push({
+              raw: s,
+              displayNumber: rawIdx + 1,
+              label: (s.label && s.label.trim()) || (s.isPrimary ? 'Primary Display' : 'External Display'),
+              isPrimary: Boolean(s.isPrimary),
+              isCurrent: isCurrent,
+              availLeft: availLeft,
+              availTop: availTop,
+              availWidth: availWidth,
+              availHeight: availHeight,
+              fullLeft: fullLeft,
+              fullTop: fullTop,
+              fullWidth: fullWidth,
+              fullHeight: fullHeight,
+              dpr: s.devicePixelRatio || 1,
+            });
+          });
+
+          // Stable visual order: left-to-right, top-to-bottom
+          list.sort((a, b) => (a.availLeft - b.availLeft) || (a.availTop - b.availTop));
+          list.forEach((item, i) => {
+            item.displayNumber = i + 1;
+          });
+          return list;
+        }
+
+        function buildSelfContainedPopupMarkup(screenMeta, screenTotal, intakeMl, goalMl, isFullScreenMode) {
+          const remainingMl = Math.max(0, goalMl - intakeMl);
+          const pct = Math.min(100, Math.round((intakeMl / Math.max(1, goalMl)) * 100));
+          const displayLine =
+            screenTotal > 1
+              ? ' · Display ' + screenMeta.displayNumber + ' of ' + screenTotal + ' (' + screenMeta.label + ')'
+              : ' · ' + screenMeta.label;
+          const remainCopy =
+            remainingMl > 0
+              ? remainingMl.toLocaleString() + ' ml remaining today'
+              : 'Daily goal reached — stay topped up!';
+
+          if (!isFullScreenMode) {
+            return (
+              '<!doctype html><html lang="en"><head><meta charset="UTF-8" />' +
+              '<meta name="viewport" content="width=device-width, initial-scale=1.0" />' +
+              '<title>Time to Drink Water! — Tide</title>' +
+              '<style>' +
+              '*{box-sizing:border-box;margin:0;padding:0}' +
+              'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#082f49;color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding:22px;user-select:none;-webkit-font-smoothing:antialiased}' +
+              '.top{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#7dd3fc;font-size:12px;font-weight:600}' +
+              '.close{width:34px;height:34px;border-radius:8px;border:none;background:transparent;color:#bae6fd;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}' +
+              '.close:hover{background:rgba(255,255,255,.12);color:#fff}' +
+              '.mid{margin:16px 0}' +
+              'h1{font-size:26px;font-weight:700;letter-spacing:-0.02em;margin-bottom:8px;line-height:1.2}' +
+              'p{font-size:14px;line-height:1.5;color:#e0f2fe}' +
+              '.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;font-weight:600;color:#fff}' +
+              '.actions{display:flex;gap:10px}' +
+              '.btn-log{flex:1;min-height:46px;padding:10px 14px;border-radius:12px;border:none;background:#38bdf8;color:#082f49;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}' +
+              '.btn-log:hover{background:#7dd3fc}' +
+              '.btn-dismiss{min-height:46px;padding:10px 14px;border-radius:12px;border:1px solid #0369a1;background:transparent;color:#e0f2fe;font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap}' +
+              '.btn-dismiss:hover{background:rgba(255,255,255,.08)}' +
+              '</style></head><body>' +
+              '<div class="top"><span>Tide' + displayLine + '</span><button type="button" id="popupCloseX" class="close" aria-label="Close">✕</button></div>' +
+              '<div class="mid"><h1>Time to Drink Water!</h1><p><span class="mono">' +
+              intakeMl.toLocaleString() + ' / ' + goalMl.toLocaleString() + ' ml</span> · ' + remainCopy + '</p></div>' +
+              '<div class="actions"><button type="button" id="popupLogBtn" class="btn-log">Log +250ml &amp; Close</button>' +
+              '<button type="button" id="popupDismissBtn" class="btn-dismiss">Dismiss</button></div>' +
+              '</body></html>'
+            );
+          }
+
+          // Full-Screen Reminder Tab/Window View
+          return (
+            '<!doctype html><html lang="en"><head><meta charset="UTF-8" />' +
+            '<meta name="viewport" content="width=device-width, initial-scale=1.0" />' +
+            '<title>Time to Drink Water! — Tide</title>' +
+            '<style>' +
+            '*{box-sizing:border-box;margin:0;padding:0}' +
+            'html,body{height:100%;width:100%;overflow:hidden}' +
+            'body{font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:radial-gradient(circle at 50% 25%, #0c4a6e 0%, #082f49 52%, #051c2e 100%);color:#fff;display:flex;flex-direction:column;justify-content:space-between;position:relative;user-select:none;-webkit-font-smoothing:antialiased}' +
+            '.topbar{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:20px 28px;font-size:13px;color:#bae6fd}' +
+            '.meta{display:flex;align-items:center;gap:10px;font-weight:500}' +
+            '.top-actions{display:flex;align-items:center;gap:8px}' +
+            '.btn-top{min-height:36px;padding:6px 12px;border-radius:9px;border:1px solid rgba(125,211,252,.28);background:rgba(255,255,255,.06);color:#e0f2fe;font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap}' +
+            '.btn-top:hover{background:rgba(255,255,255,.14);color:#fff}' +
+            '.center{position:relative;z-index:10;margin:auto;width:100%;max-width:640px;padding:24px 32px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:22px}' +
+            '.drop-icon{width:72px;height:72px;border-radius:22px;background:rgba(56,189,248,.16);border:1px solid rgba(125,211,252,.35);display:flex;align-items:center;justify-content:center;color:#7dd3fc}' +
+            'h1{font-size:clamp(2.25rem,5.2vw,3.75rem);font-weight:700;letter-spacing:-0.03em;line-height:1.1;text-wrap:balance}' +
+            '.lead{font-size:clamp(1rem,1.8vw,1.2rem);color:#e0f2fe;line-height:1.5;max-width:48ch}' +
+            '.progress-box{width:100%;max-width:460px;display:flex;flex-direction:column;gap:10px;padding:18px 22px;border-radius:16px;background:rgba(5,28,46,.52);border:1px solid rgba(125,211,252,.22)}' +
+            '.progress-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:14px;color:#bae6fd}' +
+            '.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}' +
+            '.progress-val{font-size:18px;font-weight:700;color:#fff}' +
+            '.track{height:10px;width:100%;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden}' +
+            '.fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#38bdf8,#7dd3fc);width:' + pct + '%}' +
+            '.actions{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;width:100%;margin-top:6px}' +
+            '.btn-log{min-height:56px;min-width:240px;padding:14px 28px;border-radius:14px;border:none;background:#38bdf8;color:#082f49;font-size:16px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 12px 28px rgba(2,132,199,.38);transition:transform .12s ease,background-color .15s ease}' +
+            '.btn-log:hover{background:#7dd3fc}' +
+            '.btn-log:active{transform:scale(0.98)}' +
+            '.btn-dismiss{min-height:56px;padding:14px 24px;border-radius:14px;border:1px solid rgba(125,211,252,.35);background:rgba(255,255,255,.06);color:#e0f2fe;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap}' +
+            '.btn-dismiss:hover{background:rgba(255,255,255,.14);color:#fff}' +
+            '.keys{font-size:12px;color:rgba(186,230,253,.72);margin-top:4px}' +
+            '.waves{position:fixed;left:0;right:0;bottom:0;height:130px;pointer-events:none;z-index:1;overflow:hidden;opacity:.42}' +
+            '.wave{position:absolute;left:0;bottom:0;width:200%;height:110px;animation:slide 9s linear infinite}' +
+            '.wave2{bottom:10px;opacity:.55;animation:slideR 6.5s linear infinite}' +
+            '@keyframes slide{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}' +
+            '@keyframes slideR{0%{transform:translateX(-50%)}100%{transform:translateX(0)}}' +
+            '</style></head><body>' +
+            '<div class="topbar">' +
+            '<div class="meta"><span>Tide Hydration Reminder' + displayLine + '</span><span class="mono" style="opacity:.7">' + screenMeta.availWidth + '×' + screenMeta.availHeight + '</span></div>' +
+            '<div class="top-actions">' +
+            '<button type="button" id="popupFsBtn" class="btn-top">Fullscreen</button>' +
+            '<button type="button" id="popupCloseX" class="btn-top" aria-label="Close">Close ✕</button>' +
+            '</div></div>' +
+            '<div class="center">' +
+            '<div class="drop-icon" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>' +
+            '<h1>Time to Drink Water!</h1>' +
+            '<p class="lead">Step away from the screen for a few seconds and take a refreshing sip.</p>' +
+            '<div class="progress-box">' +
+            '<div class="progress-top"><span class="mono progress-val">' + intakeMl.toLocaleString() + ' / ' + goalMl.toLocaleString() + ' ml</span><span class="mono">' + pct + '%</span></div>' +
+            '<div class="track"><div class="fill"></div></div>' +
+            '<div style="font-size:13px;color:#bae6fd;text-align:left">' + remainCopy + '</div>' +
+            '</div>' +
+            '<div class="actions">' +
+            '<button type="button" id="popupLogBtn" class="btn-log">Log +250ml &amp; Close</button>' +
+            '<button type="button" id="popupDismissBtn" class="btn-dismiss">Dismiss</button>' +
+            '</div>' +
+            '<div class="keys">Press Enter to log +250ml · Press Esc to dismiss</div>' +
+            '</div>' +
+            '<div class="waves" aria-hidden="true">' +
+            '<svg class="wave wave2" viewBox="0 0 1200 120" preserveAspectRatio="none"><path fill="#0284c7" d="M0,48 C200,96 400,0 600,48 C800,96 1000,0 1200,48 L1200,120 L0,120 Z"/></svg>' +
+            '<svg class="wave" viewBox="0 0 1200 120" preserveAspectRatio="none"><path fill="#38bdf8" d="M0,62 C180,18 360,104 600,62 C840,20 1020,102 1200,62 L1200,120 L0,120 Z"/></svg>' +
+            '</div>' +
+            '</body></html>'
+          );
+        }
+
+        function openWindowOnScreen(screenMeta, screenTotal, launchId) {
+          const isFullScreenMode = settings.popupSizeMode !== 'compact';
+          const width = isFullScreenMode ? screenMeta.availWidth : 400;
+          const height = isFullScreenMode ? screenMeta.availHeight : 300;
+          const left = isFullScreenMode
+            ? screenMeta.availLeft
+            : Math.round(screenMeta.availLeft + (screenMeta.availWidth - width) / 2);
+          const top = isFullScreenMode
+            ? screenMeta.availTop
+            : Math.round(screenMeta.availTop + (screenMeta.availHeight - height) / 2);
+
+          // Unique window name per launch prevents browsers from recycling a previously clamped window position
+          const targetName = 'tide_screen_' + screenMeta.displayNumber + '_' + launchId;
+          const features =
+            'popup=yes' +
+            ',left=' + left +
+            ',top=' + top +
+            ',screenX=' + left +
+            ',screenY=' + top +
+            ',width=' + width +
+            ',height=' + height +
+            ',resizable=yes,scrollbars=no';
+
+          let win = null;
+          try {
+            win = window.open('', targetName, features);
+          } catch {
+            win = null;
+          }
+
+          if (!win) {
+            return { opened: false, misplaced: false };
+          }
+
+          try {
+            const html = buildSelfContainedPopupMarkup(
+              screenMeta,
+              screenTotal,
+              progress.intakeMl,
+              progress.goalMl,
+              isFullScreenMode
+            );
+            win.document.open();
+            win.document.write(html);
+            win.document.close();
+
+            // Immediately enforce target monitor coordinates & full-screen dimensions
+            // (fixes OS/Chromium initial clamping onto primary monitor on mixed-DPI setups)
+            try {
+              win.moveTo(left, top);
+              win.resizeTo(width, height);
+            } catch {
+              // ignore moveTo restrictions
+            }
+
+            // Second reinforcement pass after window frame finishes layout
+            window.setTimeout(() => {
+              try {
+                if (win && !win.closed) {
+                  win.moveTo(left, top);
+                  win.resizeTo(width, height);
+                }
+              } catch {
+                // ignore
+              }
+            }, 90);
+
+            const logBtn = win.document.getElementById('popupLogBtn');
+            const dismissBtn = win.document.getElementById('popupDismissBtn');
+            const closeX = win.document.getElementById('popupCloseX');
+            const fsBtn = win.document.getElementById('popupFsBtn');
+
+            if (logBtn) {
+              logBtn.addEventListener('click', () => handlePopupLogAction(250));
+            }
+            if (dismissBtn) {
+              dismissBtn.addEventListener('click', () => dismissAlert());
+            }
+            if (closeX) {
+              closeX.addEventListener('click', () => dismissAlert());
+            }
+            if (fsBtn) {
+              fsBtn.addEventListener('click', () => {
+                try {
+                  if (!win.document.fullscreenElement) {
+                    const opts = screenMeta.raw ? { screen: screenMeta.raw } : undefined;
+                    win.document.documentElement.requestFullscreen(opts).catch(() => {
+                      win.document.documentElement.requestFullscreen().catch(() => {});
+                    });
+                  } else {
+                    win.document.exitFullscreen().catch(() => {});
+                  }
+                } catch {
+                  // ignore
+                }
+              });
+            }
+
+            win.document.addEventListener('keydown', (ev) => {
+              if (ev.key === 'Enter') {
+                ev.preventDefault();
+                handlePopupLogAction(250);
+              } else if (ev.key === 'Escape') {
+                ev.preventDefault();
+                dismissAlert();
+              }
+            });
+
+            win.focus();
+            activePopups.add(win);
+            return { opened: true, win: win };
+          } catch {
+            return { opened: false, misplaced: false };
+          }
+        }
+
+        function handlePopupLogAction(amountMl) {
+          const now = Date.now();
+          if (now - lastPopupActionAt < 400) return;
+          lastPopupActionAt = now;
+          addWater(amountMl, 'popup');
+          stopTabTitleFlash();
+          closeAllPopups();
+          hideAlertModal();
+          if (isRunning) {
+            resetTimer(true);
+          }
+        }
+
+        async function queryMultiScreenPermission() {
+          if (typeof window.getScreenDetails !== 'function') {
+            multiScreenPerm = 'unsupported';
+            return;
+          }
+          if (!navigator.permissions || !navigator.permissions.query) {
+            multiScreenPerm = 'prompt';
+            return;
+          }
+          try {
+            const status = await navigator.permissions.query({ name: 'window-management' });
+            multiScreenPerm = status.state === 'granted' ? 'granted' : status.state === 'denied' ? 'denied' : 'prompt';
+            if (multiScreenPerm === 'granted') {
+              await requestMultiScreenDetails();
+            }
+          } catch {
+            multiScreenPerm = 'prompt';
+          }
+        }
+
+        async function requestMultiScreenDetails() {
+          if (typeof window.getScreenDetails !== 'function') {
+            multiScreenPerm = 'unsupported';
+            renderPermissions();
+            return;
+          }
+          try {
+            const details = await window.getScreenDetails();
+            screenDetails = details;
+            multiScreenPerm = 'granted';
+            const normalized = getNormalizedScreens();
+            detectedScreensCount = Math.max(1, normalized.length);
+            if (details.addEventListener) {
+              const onScreenUpdate = () => {
+                if (screenDetails) {
+                  detectedScreensCount = Math.max(1, getNormalizedScreens().length);
+                  renderPermissions();
+                }
+              };
+              details.addEventListener('screenschange', onScreenUpdate);
+              details.addEventListener('currentscreenchange', onScreenUpdate);
+            }
+          } catch (err) {
+            const denied = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
+            multiScreenPerm = denied ? 'denied' : 'prompt';
+          }
+          renderPermissions();
+        }
+
+        async function requestNotificationPermission() {
+          if (!('Notification' in window)) {
+            notifPerm = 'unsupported';
+            renderPermissions();
+            return;
+          }
+          try {
+            notifPerm = await Notification.requestPermission();
+            if (notifPerm === 'granted') {
+              settings.notificationsEnabled = true;
+              saveSettings(settings);
+            }
+          } catch {
+            notifPerm = Notification.permission;
+          }
+          renderPermissions();
+        }
+
+        function testSingleScreenPopup(screenMeta, totalCount) {
+          closeAllPopups();
+          playHydrationSound(settings.soundVolume, settings.soundMuted, settings.soundTone);
+          const launchId = Date.now();
+          const res = openWindowOnScreen(screenMeta, totalCount, launchId);
+          showAlertModal({
+            soundPlayed: !settings.soundMuted && settings.soundVolume > 0.005,
+            notificationSent: false,
+            popupsOpened: res.opened ? 1 : 0,
+            popupsBlocked: !res.opened,
+            usedFallbackTitleFlash: false,
+            screenNames: res.opened ? [screenMeta.label] : [],
+          });
+        }
+
+        async function triggerReminderAlert() {
+          const remainingMl = Math.max(0, progress.goalMl - progress.intakeMl);
+          const progressText =
+            remainingMl > 0
+              ? progress.intakeMl.toLocaleString() +
+                ' / ' +
+                progress.goalMl.toLocaleString() +
+                ' ml today · ' +
+                remainingMl.toLocaleString() +
+                ' ml left'
+              : 'Daily goal reached (' + progress.intakeMl.toLocaleString() + ' ml) — stay topped up!';
+
+          // IMPORTANT: Open multi-screen popup windows SYNCHRONOUSLY BEFORE any await!
+          // Awaiting audio/permissions first causes Chromium to drop transient user activation
+          // and clamp secondary screen popups onto the primary monitor.
+          closeAllPopups();
+          const launchId = Date.now();
+          let popupsOpened = 0;
+          let popupsBlocked = false;
+          let usedFallbackTitleFlash = false;
+          const openedScreenNames = [];
+
+          // Fire audio right away (do NOT await before window.open)
+          const soundPromise = playHydrationSound(
+            settings.soundVolume,
+            settings.soundMuted,
+            settings.soundTone
+          );
+
+          // Get cached normalized screens synchronously
+          let screens = settings.multiScreenPopupsEnabled ? getNormalizedScreens() : [];
+
+          // If permission is granted or promptable and not yet cached, request screen details once
+          if (
+            settings.multiScreenPopupsEnabled &&
+            screens.length === 0 &&
+            typeof window.getScreenDetails === 'function' &&
+            (multiScreenPerm === 'granted' || multiScreenPerm === 'prompt')
+          ) {
+            try {
+              const fresh = await window.getScreenDetails();
+              screenDetails = fresh;
+              multiScreenPerm = 'granted';
+              screens = getNormalizedScreens();
+              detectedScreensCount = Math.max(1, screens.length);
+              renderPermissions();
+            } catch (err) {
+              const denied = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
+              if (denied) multiScreenPerm = 'denied';
+              screens = [];
+              renderPermissions();
+            }
+          }
+
+          if (settings.multiScreenPopupsEnabled && screens.length > 0) {
+            // CRITICAL FIX: Open REMOTE (non-current) monitors FIRST while user activation is freshest,
+            // then open the current monitor LAST so both screens reliably receive their own window!
+            const remoteScreens = screens.filter((s) => !s.isCurrent);
+            const currentScreens = screens.filter((s) => s.isCurrent);
+            const launchOrder = remoteScreens.concat(currentScreens);
+
+            launchOrder.forEach((scr) => {
+              const res = openWindowOnScreen(scr, screens.length, launchId);
+              if (res.opened) {
+                popupsOpened += 1;
+                openedScreenNames.push('Display ' + scr.displayNumber + ' (' + scr.label + ')');
+              } else {
+                popupsBlocked = true;
+              }
+            });
+          } else if (settings.multiScreenPopupsEnabled) {
+            // Fallback when getScreenDetails() is unsupported or permission not granted:
+            // Open a full-screen standard popup + flash tab title
+            const fallbackScreen = {
+              raw: null,
+              displayNumber: 1,
+              label: 'Current Display',
+              isPrimary: true,
+              isCurrent: true,
+              availLeft: typeof window.screen.availLeft === 'number' ? window.screen.availLeft : 0,
+              availTop: typeof window.screen.availTop === 'number' ? window.screen.availTop : 0,
+              availWidth: window.screen.availWidth || 1280,
+              availHeight: window.screen.availHeight || 720,
+            };
+            const res = openWindowOnScreen(fallbackScreen, 1, launchId);
+            if (res.opened) {
+              popupsOpened = 1;
+              openedScreenNames.push('Current Display');
+            } else {
+              popupsBlocked = true;
+            }
+            startTabTitleFlash('💧 Time to Drink Water!');
+            usedFallbackTitleFlash = true;
+          } else {
+            startTabTitleFlash('💧 Time to Drink Water!');
+            usedFallbackTitleFlash = true;
+          }
+
+          // Native OS Browser Notification
+          let notificationSent = false;
+          if (
+            settings.notificationsEnabled &&
+            'Notification' in window &&
+            Notification.permission === 'granted'
+          ) {
+            try {
+              const n = new Notification('Time to Drink Water!', {
+                body: progressText,
+                tag: 'tide-hydration-reminder',
+                requireInteraction: true,
+                silent: true,
+              });
+              n.onclick = function () {
+                window.focus();
+                n.close();
+              };
+              notificationSent = true;
+            } catch {
+              notificationSent = false;
+            }
+          }
+
+          const soundPlayed = await soundPromise;
+
+          showAlertModal({
+            soundPlayed,
+            notificationSent,
+            popupsOpened,
+            popupsBlocked,
+            usedFallbackTitleFlash,
+            screenNames: openedScreenNames,
+          });
+        }
+
+        function showAlertModal(res) {
+          const modal = document.getElementById('alertModal');
+          const copyEl = document.getElementById('modalProgressCopy');
+          const sumEl = document.getElementById('modalSummaryLine');
+          const blockedEl = document.getElementById('modalBlockedNote');
+
+          const remainingMl = Math.max(0, progress.goalMl - progress.intakeMl);
+          copyEl.innerHTML =
+            'You&apos;re at <span class="mono" style="font-weight:700;color:#fff">' +
+            progress.intakeMl.toLocaleString() +
+            ' / ' +
+            progress.goalMl.toLocaleString() +
+            ' ml</span> today. ' +
+            (remainingMl > 0
+              ? remainingMl.toLocaleString() + ' ml left to hit your daily goal.'
+              : 'You reached your goal — keep sipping steadily.');
+
+          const parts = [];
+          if (res.soundPlayed) parts.push('Sound played');
+          if (res.notificationSent) parts.push('OS notification sent');
+          if (res.popupsOpened === 1) {
+            parts.push('1 window opened' + (res.screenNames && res.screenNames[0] ? ' on ' + res.screenNames[0] : ''));
+          } else if (res.popupsOpened > 1) {
+            parts.push(
+              res.popupsOpened +
+                ' windows opened (' +
+                (res.screenNames ? res.screenNames.join(', ') : 'multi-screen') +
+                ')'
+            );
+          }
+          if (res.usedFallbackTitleFlash) parts.push('Tab title flashing');
+
+          if (parts.length > 0) {
+            sumEl.textContent = parts.join(' · ');
+            sumEl.classList.remove('hidden');
+          } else {
+            sumEl.classList.add('hidden');
+          }
+
+          if (res.popupsBlocked) {
+            blockedEl.textContent =
+              'Your browser blocked one or more popup windows. Set both "Pop-ups and redirects" and "Window management" to Allow in site settings so full-screen alerts open on every monitor.';
+            blockedEl.classList.remove('hidden');
+          } else {
+            blockedEl.classList.add('hidden');
+          }
+
+          modal.classList.remove('hidden');
+        }
+
+        function hideAlertModal() {
+          document.getElementById('alertModal').classList.add('hidden');
+        }
+
+        function dismissAlert() {
+          stopTabTitleFlash();
+          closeAllPopups();
+          hideAlertModal();
+        }
+
+        /* =========================================================
+           6. HYDRATION ACTIONS & TIMER ENGINE
+           ========================================================= */
+        function spawnBubbles() {
+          const layer = document.getElementById('bubbleLayer');
+          layer.innerHTML = '';
+          for (let i = 0; i < 5; i++) {
+            const b = document.createElement('span');
+            b.className = 'bubble';
+            const size = 5 + ((i * 3 + Math.floor(Math.random() * 4)) % 6);
+            const leftPct = 16 + i * 16 + Math.floor(Math.random() * 8 - 4);
+            b.style.width = size + 'px';
+            b.style.height = size + 'px';
+            b.style.left = leftPct + '%';
+            b.style.animationDelay = i * 85 + 'ms';
+            layer.appendChild(b);
+          }
+          window.setTimeout(() => {
+            layer.innerHTML = '';
+          }, 1700);
+        }
+
+        function addWater(amountMl, source) {
+          if (!amountMl || amountMl <= 0) return;
+          const todayKey = getLocalDateKey();
+          const entry = {
+            id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+            amountMl: Math.round(amountMl),
+            timestamp: Date.now(),
+            source: source || 'quick',
+          };
+
+          if (progress.dateKey !== todayKey) {
+            archiveProgressToHistory(progress);
+            history = loadHistory();
+            progress = {
+              dateKey: todayKey,
+              intakeMl: entry.amountMl,
+              goalMl: settings.goalMl,
+              entries: [entry],
+            };
+          } else {
+            progress.intakeMl += entry.amountMl;
+            progress.entries.push(entry);
+          }
+
+          saveDailyProgress(progress);
+          spawnBubbles();
+          playSipFeedback(settings.soundVolume, settings.soundMuted);
+          renderHydration();
+          renderHistory();
+        }
+
+        function undoLast() {
+          if (progress.entries.length === 0) return;
+          const last = progress.entries.pop();
+          progress.intakeMl = Math.max(0, progress.intakeMl - last.amountMl);
+          saveDailyProgress(progress);
+          renderHydration();
+          renderHistory();
+        }
+
+        function deleteEntry(id) {
+          const idx = progress.entries.findIndex((e) => e.id === id);
+          if (idx < 0) return;
+          const removed = progress.entries.splice(idx, 1)[0];
+          progress.intakeMl = Math.max(0, progress.intakeMl - removed.amountMl);
+          saveDailyProgress(progress);
+          renderHydration();
+          renderHistory();
+        }
+
+        function resetTodayIntake() {
+          progress.intakeMl = 0;
+          progress.entries = [];
+          confirmResetToday = false;
+          saveDailyProgress(progress);
+          renderHydration();
+          renderHistory();
+        }
+
+        function updateGoal(newGoalMl) {
+          const clamped = Math.min(10000, Math.max(500, Math.round(newGoalMl)));
+          settings.goalMl = clamped;
+          progress.goalMl = clamped;
+          saveSettings(settings);
+          saveDailyProgress(progress);
+          renderHydration();
+          renderHistory();
+        }
+
+        function stopTimerLoop() {
+          if (timerIntervalId !== null) {
+            window.clearInterval(timerIntervalId);
+            timerIntervalId = null;
+          }
+        }
+
+        function startTimerLoop() {
+          stopTimerLoop();
+          if (targetEndTime === null) {
+            targetEndTime = Date.now() + remainingSeconds * 1000;
+          }
+          const tick = () => {
+            if (!isRunning || targetEndTime === null) return;
+            const msLeft = targetEndTime - Date.now();
+            if (msLeft <= 0) {
+              const nextSecs = settings.intervalMinutes * 60;
+              targetEndTime = Date.now() + nextSecs * 1000;
+              remainingSeconds = nextSecs;
+              renderTimer();
+              triggerReminderAlert();
+            } else {
+              const nextSec = Math.ceil(msLeft / 1000);
+              if (nextSec !== remainingSeconds) {
+                remainingSeconds = nextSec;
+                renderTimer();
+              }
+            }
+          };
+          tick();
+          timerIntervalId = window.setInterval(tick, 250);
+        }
+
+        function toggleTimer() {
+          if (isRunning) {
+            if (targetEndTime !== null) {
+              remainingSeconds = Math.max(1, Math.ceil((targetEndTime - Date.now()) / 1000));
+            }
+            targetEndTime = null;
+            isRunning = false;
+            stopTimerLoop();
+          } else {
+            const startSecs = remainingSeconds > 0 ? remainingSeconds : settings.intervalMinutes * 60;
+            remainingSeconds = startSecs;
+            targetEndTime = Date.now() + startSecs * 1000;
+            isRunning = true;
+            startTimerLoop();
+          }
+          renderTimer();
+        }
+
+        function resetTimer(keepRunning) {
+          const secs = settings.intervalMinutes * 60;
+          remainingSeconds = secs;
+          if (keepRunning) {
+            targetEndTime = Date.now() + secs * 1000;
+            isRunning = true;
+            startTimerLoop();
+          } else {
+            targetEndTime = null;
+            isRunning = false;
+            stopTimerLoop();
+          }
+          renderTimer();
+        }
+
+        function selectInterval(minutes) {
+          const clamped = Math.min(240, Math.max(1, Math.round(minutes)));
+          settings.intervalMinutes = clamped;
+          saveSettings(settings);
+          remainingSeconds = clamped * 60;
+          if (isRunning) {
+            targetEndTime = Date.now() + remainingSeconds * 1000;
+          } else {
+            targetEndTime = null;
+          }
+          renderTimer();
+        }
+
+        /* =========================================================
+           7. MIDNIGHT AUTOMATIC RESET SCHEDULER
+           ========================================================= */
+        function checkMidnightRollover() {
+          const todayKey = getLocalDateKey();
+          if (progress.dateKey !== todayKey) {
+            const loaded = loadDailyProgress(settings.goalMl);
+            progress = loaded.progress;
+            history = loadHistory();
+            document.getElementById('midnightBanner').classList.remove('hidden');
+            renderAll();
+          }
+        }
+
+        function scheduleMidnightCheck() {
+          window.setTimeout(() => {
+            checkMidnightRollover();
+            scheduleMidnightCheck();
+          }, getMsUntilNextMidnight());
+        }
+
+        /* =========================================================
+           8. RENDER FUNCTIONS
+           ========================================================= */
+        function renderThemeAndLayout() {
+          document.documentElement.classList.toggle('dark', settings.theme === 'dark');
+          document.body.classList.toggle('compact-mode', settings.compactMode);
+
+          document.getElementById('themeIcon').innerHTML =
+            settings.theme === 'dark' ? ICONS.sun : ICONS.moon;
+          document
+            .getElementById('themeToggleBtn')
+            .setAttribute(
+              'aria-label',
+              settings.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+            );
+
+          document.getElementById('compactIcon').innerHTML = settings.compactMode
+            ? ICONS.maximize
+            : ICONS.minimize;
+          document.getElementById('compactLabel').textContent = settings.compactMode
+            ? 'Wide'
+            : 'Compact';
+          document.getElementById('headerTestLabel').textContent = settings.compactMode
+            ? 'Test'
+            : 'Test Reminder';
+
+          // In compact mode, place alerts panel cleanly below timer in single stack and hide redundant inline log preview
+          const leftCol = document.getElementById('leftColumn');
+          const rightCol = document.getElementById('rightColumn');
+          const alertsPanel = document.getElementById('alertsPanel');
+          const inlinePreview = document.getElementById('inlineHistoryPreview');
+
+          if (settings.compactMode) {
+            rightCol.appendChild(alertsPanel);
+            inlinePreview.classList.add('hidden');
+          } else {
+            leftCol.appendChild(alertsPanel);
+            inlinePreview.classList.remove('hidden');
+          }
+        }
+
+        function renderTabs() {
+          const isTracker = activeTab === 'tracker';
+          document.getElementById('tabTracker').classList.toggle('active', isTracker);
+          document.getElementById('tabHistory').classList.toggle('active', !isTracker);
+          document.getElementById('trackerView').classList.toggle('hidden', !isTracker);
+          document.getElementById('historyView').classList.toggle('hidden', isTracker);
+        }
+
+        function renderHydration() {
+          const intake = progress.intakeMl;
+          const goal = progress.goalMl;
+          const rawPct = goal > 0 ? (intake / goal) * 100 : 0;
+          const clampedPct = Math.min(100, Math.max(0, rawPct));
+          const displayPct = Math.round(rawPct);
+          const remaining = Math.max(0, goal - intake);
+          const goalReached = intake >= goal && goal > 0;
+
+          document.getElementById('goalBtnText').textContent = 'Goal: ' + goal.toLocaleString() + ' ml';
+          document.getElementById('intakeValue').textContent = intake.toLocaleString();
+          document.getElementById('intakeGoalText').textContent = '/ ' + goal.toLocaleString() + ' ml';
+          document.getElementById('intakePct').textContent = displayPct + '%';
+          document.getElementById('remainingText').textContent = goalReached
+            ? 'Daily goal reached'
+            : remaining.toLocaleString() + ' ml remaining';
+
+          const vessel = document.getElementById('waterVessel');
+          vessel.setAttribute('aria-valuenow', String(intake));
+          vessel.setAttribute('aria-valuemax', String(goal));
+
+          document.getElementById('waterFillLayer').style.transform =
+            'translateY(' + (100 - clampedPct) + '%)';
+          document.getElementById('linearProgressFill').style.transform =
+            'scaleX(' + clampedPct / 100 + ')';
+          document.getElementById('linearGoalLabel').textContent = goal.toLocaleString() + ' ml';
+          document.getElementById('glassesLeftText').textContent = goalReached
+            ? '+' + (intake - goal).toLocaleString() + ' ml above target'
+            : Math.round(remaining / 250) + ' glasses left (~250 ml)';
+
+          document.getElementById('undoLastBtn').disabled = progress.entries.length === 0;
+
+          // Update goal presets active state
+          const presetsEl = document.getElementById('goalPresets');
+          presetsEl.innerHTML = '';
+          GOAL_PRESETS.forEach((p) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'preset-btn mono' + (goal === p ? ' active' : '');
+            btn.textContent = p.toLocaleString() + ' ml';
+            btn.addEventListener('click', () => {
+              updateGoal(p);
+              document.getElementById('goalEditorForm').classList.add('hidden');
+            });
+            presetsEl.appendChild(btn);
+          });
+        }
+
+        function renderTimer() {
+          const totalSecs = Math.max(60, settings.intervalMinutes * 60);
+          const elapsed = Math.min(1, Math.max(0, (totalSecs - remainingSeconds) / totalSecs));
+
+          document.getElementById('timerDigits').textContent = formatCountdown(remainingSeconds);
+          document.getElementById('timerCycleLabel').textContent = settings.intervalMinutes + 'm cycle';
+          document.getElementById('timerProgressFill').style.transform = 'scaleX(' + elapsed + ')';
+
+          const subtitle = document.getElementById('timerSubtitle');
+          const badge = document.getElementById('timerStateBadge');
+          const toggleBtn = document.getElementById('timerToggleBtn');
+          const toggleIcon = document.getElementById('timerToggleIcon');
+          const toggleLabel = document.getElementById('timerToggleLabel');
+
+          if (isRunning) {
+            subtitle.textContent = 'Next alert in ' + formatCountdown(remainingSeconds);
+            badge.textContent = 'Active';
+            badge.classList.add('running');
+            toggleBtn.classList.add('paused-style');
+            toggleIcon.innerHTML = ICONS.pause;
+            toggleLabel.textContent = 'Pause';
+          } else {
+            subtitle.textContent =
+              remainingSeconds < totalSecs
+                ? 'Paused — resume when ready'
+                : 'Every ' + settings.intervalMinutes + ' minutes';
+            badge.textContent = remainingSeconds < totalSecs ? 'Paused' : 'Standby';
+            badge.classList.remove('running');
+            toggleBtn.classList.remove('paused-style');
+            toggleIcon.innerHTML = ICONS.play;
+            toggleLabel.textContent = 'Start';
+          }
+
+          document.querySelectorAll('[data-interval]').forEach((btn) => {
+            const mins = Number(btn.getAttribute('data-interval'));
+            btn.classList.toggle('active', settings.intervalMinutes === mins);
+          });
+        }
+
+        function renderAudioControls() {
+          const volPct = Math.round(settings.soundVolume * 100);
+          const muteBtn = document.getElementById('muteToggleBtn');
+          muteBtn.classList.toggle('muted', settings.soundMuted);
+          muteBtn.setAttribute(
+            'aria-label',
+            settings.soundMuted ? 'Unmute reminder sound' : 'Mute reminder sound'
+          );
+          document.getElementById('muteIcon').innerHTML = settings.soundMuted
+            ? ICONS.volOff
+            : ICONS.volOn;
+          document.getElementById('volumeStatusText').textContent = settings.soundMuted
+            ? 'Muted'
+            : volPct + '% volume';
+          document.getElementById('volumeSlider').value = String(settings.soundMuted ? 0 : volPct);
+
+          document.querySelectorAll('[data-tone]').forEach((btn) => {
+            btn.classList.toggle('active', btn.getAttribute('data-tone') === settings.soundTone);
+          });
+        }
+
+        function renderPermissions() {
+          // 1) Top status strip
+          const notifSlot = document.getElementById('statusNotifSlot');
+          notifSlot.innerHTML = '';
+          if (notifPerm === 'default') {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'status-link';
+            btn.textContent = 'Enable';
+            btn.addEventListener('click', requestNotificationPermission);
+            notifSlot.appendChild(btn);
+          } else if (notifPerm === 'granted' && settings.notificationsEnabled) {
+            const span = document.createElement('span');
+            span.className = 'status-ok';
+            span.textContent = 'Enabled';
+            notifSlot.appendChild(span);
+          } else if (notifPerm === 'denied') {
+            const span = document.createElement('span');
+            span.className = 'status-warn';
+            span.textContent = 'Blocked';
+            notifSlot.appendChild(span);
+          } else {
+            const span = document.createElement('span');
+            span.textContent = notifPerm === 'unsupported' ? 'Unsupported' : 'Off';
+            notifSlot.appendChild(span);
+          }
+
+          const screenSlot = document.getElementById('statusScreenSlot');
+          screenSlot.innerHTML = '';
+          if (multiScreenPerm === 'prompt' && settings.multiScreenPopupsEnabled) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'status-link';
+            btn.textContent = 'Grant access';
+            btn.addEventListener('click', requestMultiScreenDetails);
+            screenSlot.appendChild(btn);
+          } else if (multiScreenPerm === 'granted' && settings.multiScreenPopupsEnabled) {
+            const span = document.createElement('span');
+            span.className = 'status-ok';
+            span.textContent =
+              detectedScreensCount + (detectedScreensCount === 1 ? ' screen' : ' screens');
+            screenSlot.appendChild(span);
+          } else if (!settings.multiScreenPopupsEnabled) {
+            const span = document.createElement('span');
+            span.textContent = 'Off';
+            screenSlot.appendChild(span);
+          } else {
+            const span = document.createElement('span');
+            span.textContent = 'Fallback';
+            screenSlot.appendChild(span);
+          }
+
+          // 2) Alerts Panel Notification Row
+          const notifDesc = document.getElementById('notifDescText');
+          const notifAction = document.getElementById('notifActionSlot');
+          notifAction.innerHTML = '';
+
+          if (notifPerm === 'unsupported') {
+            notifDesc.textContent = 'Unsupported in this browser';
+          } else if (notifPerm === 'denied') {
+            notifDesc.textContent = 'Blocked in browser settings';
+          } else if (notifPerm === 'default') {
+            notifDesc.textContent = 'Permission not yet requested';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-accent-sm';
+            btn.textContent = 'Enable';
+            btn.addEventListener('click', requestNotificationPermission);
+            notifAction.appendChild(btn);
+          } else {
+            notifDesc.textContent = settings.notificationsEnabled
+              ? 'Enabled · OS alerts ready'
+              : 'Permission granted · Muted';
+            const sw = document.createElement('button');
+            sw.type = 'button';
+            sw.className = 'switch';
+            sw.setAttribute('role', 'switch');
+            sw.setAttribute('aria-checked', String(settings.notificationsEnabled));
+            sw.setAttribute('aria-label', 'Toggle OS Notifications');
+            sw.innerHTML = '<span class="switch-thumb"></span>';
+            sw.addEventListener('click', () => {
+              settings.notificationsEnabled = !settings.notificationsEnabled;
+              saveSettings(settings);
+              renderPermissions();
+            });
+            notifAction.appendChild(sw);
+          }
+
+          // 3) Alerts Panel Multi-Screen Row
+          const msDesc = document.getElementById('multiScreenDescText');
+          const msSwitch = document.getElementById('multiScreenSwitch');
+          const msHelper = document.getElementById('multiScreenHelper');
+          const popupModeRow = document.getElementById('popupModeRow');
+          const screensBox = document.getElementById('detectedScreensBox');
+
+          msSwitch.setAttribute('aria-checked', String(settings.multiScreenPopupsEnabled));
+          popupModeRow.classList.toggle('hidden', !settings.multiScreenPopupsEnabled);
+
+          document.querySelectorAll('[data-popup-size]').forEach((btn) => {
+            const mode = btn.getAttribute('data-popup-size');
+            btn.classList.toggle('active', (settings.popupSizeMode || 'fullscreen') === mode);
+          });
+
+          const normalizedScreens = getNormalizedScreens();
+          screensBox.innerHTML = '';
+
+          if (multiScreenPerm === 'unsupported') {
+            msDesc.textContent = 'Fallback · Single full-screen popup & tab flash';
+            msHelper.classList.add('hidden');
+            screensBox.classList.add('hidden');
+          } else if (multiScreenPerm === 'granted') {
+            const monLabel =
+              normalizedScreens.length > 1
+                ? normalizedScreens.length + ' monitors identified'
+                : '1 monitor detected';
+            msDesc.textContent = settings.multiScreenPopupsEnabled
+              ? 'Enabled · ' + monLabel
+              : 'Granted (' + monLabel + ') · Off';
+            msHelper.classList.add('hidden');
+
+            if (settings.multiScreenPopupsEnabled && normalizedScreens.length > 0) {
+              screensBox.classList.remove('hidden');
+
+              const headerRow = document.createElement('div');
+              headerRow.className = 'screens-list-header';
+              headerRow.innerHTML =
+                '<span>Detected monitors (' + normalizedScreens.length + ')</span>' +
+                '<button type="button" class="status-link">Refresh</button>';
+              headerRow.querySelector('button').addEventListener('click', requestMultiScreenDetails);
+              screensBox.appendChild(headerRow);
+
+              normalizedScreens.forEach((scr) => {
+                const row = document.createElement('div');
+                row.className = 'screen-item';
+                const tagParts = [];
+                if (scr.isPrimary) tagParts.push('Primary');
+                if (scr.isCurrent) tagParts.push('This window');
+                const suffix = tagParts.length ? ' · ' + tagParts.join(', ') : '';
+
+                row.innerHTML =
+                  '<div class="screen-item-info">' +
+                  '<span class="screen-item-name">Display ' + scr.displayNumber + ' — ' + scr.label + suffix + '</span>' +
+                  '<span class="screen-item-coords mono">' +
+                  scr.availWidth + '×' + scr.availHeight + ' · pos (' + scr.availLeft + ', ' + scr.availTop + ')</span>' +
+                  '</div>' +
+                  '<button type="button" class="screen-test-btn">Test screen ' + scr.displayNumber + '</button>';
+
+                row.querySelector('button').addEventListener('click', () => {
+                  testSingleScreenPopup(scr, normalizedScreens.length);
+                });
+                screensBox.appendChild(row);
+              });
+
+              if (window.self !== window.top) {
+                const hint = document.createElement('div');
+                hint.className = 'screen-hint';
+                hint.textContent =
+                  'Tip: Open this file directly in a dedicated Chrome/Edge tab (not inside a preview iframe) if the browser restricts cross-monitor window movement.';
+                screensBox.appendChild(hint);
+              }
+            } else {
+              screensBox.classList.add('hidden');
+            }
+          } else if (multiScreenPerm === 'denied') {
+            msDesc.textContent = 'Blocked · Using single popup & tab flash';
+            msHelper.classList.add('hidden');
+            screensBox.classList.remove('hidden');
+            const hint = document.createElement('div');
+            hint.className = 'screen-hint';
+            hint.textContent =
+              'Window management permission is blocked. Enable "Window management" and "Pop-ups and redirects" in browser site settings to open full-screen alerts on both screens.';
+            screensBox.appendChild(hint);
+          } else {
+            msDesc.textContent = 'Click Detect screens to identify both monitors';
+            msHelper.classList.toggle('hidden', !settings.multiScreenPopupsEnabled);
+            screensBox.classList.add('hidden');
+          }
+        }
+
+        function buildLogListElement(entriesSubset) {
+          if (entriesSubset.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'empty-log';
+            empty.innerHTML =
+              '<span>No water logged yet today.</span>' +
+              '<button type="button" class="btn-accent-sm">Log first glass (+250 ml)</button>';
+            empty.querySelector('button').addEventListener('click', () => addWater(250, 'quick'));
+            return empty;
+          }
+
+          const ul = document.createElement('ul');
+          ul.className = 'log-list';
+          const reversed = entriesSubset.slice().reverse();
+          reversed.forEach((entry) => {
+            const li = document.createElement('li');
+            li.className = 'log-item';
+            const sourceLabel =
+              entry.source === 'popup'
+                ? 'Reminder popup'
+                : entry.source === 'custom'
+                  ? 'Custom entry'
+                  : 'Quick add';
+
+            li.innerHTML =
+              '<div class="log-item-main">' +
+              '<span class="log-amount mono">+' +
+              entry.amountMl +
+              ' ml</span>' +
+              '<span class="log-meta">' +
+              formatTimeShort(entry.timestamp) +
+              ' · ' +
+              sourceLabel +
+              '</span></div>' +
+              '<button type="button" class="btn-delete" aria-label="Remove entry">' +
+              ICONS.trash +
+              '</button>';
+
+            li.querySelector('.btn-delete').addEventListener('click', () => deleteEntry(entry.id));
+            ul.appendChild(li);
+          });
+          return ul;
+        }
+
+        function renderHistory() {
+          const countText =
+            progress.entries.length +
+            (progress.entries.length === 1 ? ' entry' : ' entries') +
+            ' · ' +
+            progress.intakeMl.toLocaleString() +
+            ' ml total';
+
+          document.getElementById('inlineLogSubtitle').textContent = countText;
+          document.getElementById('fullLogSubtitle').textContent = countText;
+          document.getElementById('chartGoalLabel').textContent =
+            'Goal ' + progress.goalMl.toLocaleString() + ' ml';
+
+          const inlineCont = document.getElementById('inlineLogContainer');
+          inlineCont.innerHTML = '';
+          inlineCont.appendChild(buildLogListElement(progress.entries.slice(-5)));
+
+          const fullCont = document.getElementById('fullLogContainer');
+          fullCont.innerHTML = '';
+          fullCont.appendChild(buildLogListElement(progress.entries));
+
+          // Reset today controls
+          const resetSlot = document.getElementById('resetControlsSlot');
+          resetSlot.innerHTML = '';
+          if (progress.entries.length > 0) {
+            if (!confirmResetToday) {
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className = 'btn-outline-sm';
+              btn.textContent = 'Reset today';
+              btn.addEventListener('click', () => {
+                confirmResetToday = true;
+                renderHistory();
+              });
+              resetSlot.appendChild(btn);
+            } else {
+              const wrap = document.createElement('div');
+              wrap.style.display = 'flex';
+              wrap.style.gap = '6px';
+              const confirmBtn = document.createElement('button');
+              confirmBtn.type = 'button';
+              confirmBtn.className = 'btn-danger-sm';
+              confirmBtn.textContent = 'Confirm reset';
+              confirmBtn.addEventListener('click', resetTodayIntake);
+              const cancelBtn = document.createElement('button');
+              cancelBtn.type = 'button';
+              cancelBtn.className = 'btn-ghost';
+              cancelBtn.textContent = 'Cancel';
+              cancelBtn.addEventListener('click', () => {
+                confirmResetToday = false;
+                renderHistory();
+              });
+              wrap.appendChild(confirmBtn);
+              wrap.appendChild(cancelBtn);
+              resetSlot.appendChild(wrap);
+            }
+          }
+
+          // 7-day bar chart
+          const recentDays = history
+            .filter((d) => d.dateKey !== progress.dateKey)
+            .slice(-6)
+            .concat([{ dateKey: progress.dateKey, intakeMl: progress.intakeMl, goalMl: progress.goalMl }]);
+
+          const maxMl = Math.max(
+            progress.goalMl,
+            1000,
+            ...recentDays.map((d) => d.intakeMl)
+          );
+
+          const chartEl = document.getElementById('historyChart');
+          chartEl.innerHTML = '';
+          recentDays.forEach((day) => {
+            const isToday = day.dateKey === progress.dateKey;
+            const metGoal = day.intakeMl >= day.goalMl;
+            const pct = Math.min(100, Math.round((day.intakeMl / maxMl) * 100));
+
+            const col = document.createElement('div');
+            col.className = 'chart-col';
+            col.innerHTML =
+              '<span class="chart-val mono">' +
+              (day.intakeMl > 0 ? (day.intakeMl / 1000).toFixed(1) + 'L' : '0') +
+              '</span>' +
+              '<div class="chart-bar-track"><div class="chart-bar-fill' +
+              (metGoal ? ' met' : isToday ? ' today' : '') +
+              '" style="height:' +
+              (day.intakeMl > 0 ? Math.max(8, pct) : 0) +
+              '%"></div></div>' +
+              '<span class="chart-day' +
+              (isToday ? ' today' : '') +
+              '">' +
+              (isToday ? 'Today' : formatShortDayLabel(day.dateKey)) +
+              '</span>';
+            chartEl.appendChild(col);
+          });
+        }
+
+        function renderAll() {
+          document.getElementById('todayDateLabel').textContent = formatReadableDate();
+          renderThemeAndLayout();
+          renderTabs();
+          renderHydration();
+          renderTimer();
+          renderAudioControls();
+          renderPermissions();
+          renderHistory();
+        }
+
+        /* =========================================================
+           9. EVENT LISTENERS & INITIALIZATION
+           ========================================================= */
+        document.getElementById('brandBtn').addEventListener('click', () => {
+          activeTab = 'tracker';
+          renderTabs();
+        });
+        document.getElementById('tabTracker').addEventListener('click', () => {
+          activeTab = 'tracker';
+          renderTabs();
+        });
+        document.getElementById('tabHistory').addEventListener('click', () => {
+          activeTab = 'history';
+          renderTabs();
+        });
+        document.getElementById('viewAllHistoryBtn').addEventListener('click', () => {
+          activeTab = 'history';
+          renderTabs();
+        });
+
+        document.getElementById('compactToggleBtn').addEventListener('click', () => {
+          settings.compactMode = !settings.compactMode;
+          saveSettings(settings);
+          renderThemeAndLayout();
+        });
+
+        document.getElementById('themeToggleBtn').addEventListener('click', () => {
+          settings.theme = settings.theme === 'dark' ? 'light' : 'dark';
+          saveSettings(settings);
+          renderThemeAndLayout();
+        });
+
+        document.getElementById('dismissMidnightBtn').addEventListener('click', () => {
+          document.getElementById('midnightBanner').classList.add('hidden');
+        });
+
+        // Goal editor
+        document.getElementById('editGoalBtn').addEventListener('click', () => {
+          const form = document.getElementById('goalEditorForm');
+          const input = document.getElementById('goalInput');
+          input.value = String(progress.goalMl);
+          form.classList.toggle('hidden');
+          if (!form.classList.contains('hidden')) input.focus();
+        });
+
+        document.getElementById('cancelGoalBtn').addEventListener('click', () => {
+          document.getElementById('goalEditorForm').classList.add('hidden');
+        });
+
+        document.getElementById('goalEditorForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const val = Number(document.getElementById('goalInput').value);
+          if (!Number.isNaN(val) && val >= 500 && val <= 10000) {
+            updateGoal(val);
+            document.getElementById('goalEditorForm').classList.add('hidden');
+          }
+        });
+
+        // Quick-add buttons
+        document.querySelectorAll('[data-quick-ml]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            addWater(Number(btn.getAttribute('data-quick-ml')), 'quick');
+          });
+        });
+
+        // Custom amount form
+        document.getElementById('showCustomAddBtn').addEventListener('click', () => {
+          document.getElementById('showCustomAddBtn').classList.add('hidden');
+          document.getElementById('customAddForm').classList.remove('hidden');
+          document.getElementById('customMlInput').focus();
+        });
+
+        document.getElementById('closeCustomAddBtn').addEventListener('click', () => {
+          document.getElementById('customAddForm').classList.add('hidden');
+          document.getElementById('showCustomAddBtn').classList.remove('hidden');
+        });
+
+        document.getElementById('customAddForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const val = Number(document.getElementById('customMlInput').value);
+          if (!Number.isNaN(val) && val > 0 && val <= 3000) {
+            addWater(val, 'custom');
+            document.getElementById('customAddForm').classList.add('hidden');
+            document.getElementById('showCustomAddBtn').classList.remove('hidden');
+          }
+        });
+
+        document.getElementById('undoLastBtn').addEventListener('click', undoLast);
+
+        // Timer controls
+        document.getElementById('timerToggleBtn').addEventListener('click', toggleTimer);
+        document.getElementById('timerResetBtn').addEventListener('click', () => resetTimer(false));
+
+        document.querySelectorAll('[data-interval]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            document.getElementById('customIntervalInput').value = '';
+            selectInterval(Number(btn.getAttribute('data-interval')));
+          });
+        });
+
+        document.getElementById('customIntervalForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const val = Number(document.getElementById('customIntervalInput').value);
+          if (!Number.isNaN(val) && val >= 1 && val <= 240) {
+            selectInterval(val);
+          }
+        });
+
+        document.getElementById('headerTestBtn').addEventListener('click', triggerReminderAlert);
+        document.getElementById('panelTestBtn').addEventListener('click', triggerReminderAlert);
+
+        // Audio controls
+        document.getElementById('muteToggleBtn').addEventListener('click', () => {
+          settings.soundMuted = !settings.soundMuted;
+          saveSettings(settings);
+          renderAudioControls();
+        });
+
+        document.getElementById('volumeSlider').addEventListener('input', (e) => {
+          const nextVol = Number(e.target.value) / 100;
+          settings.soundVolume = nextVol;
+          settings.soundMuted = nextVol === 0;
+          saveSettings(settings);
+          renderAudioControls();
+        });
+
+        document.querySelectorAll('[data-tone]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            settings.soundTone = btn.getAttribute('data-tone');
+            saveSettings(settings);
+            renderAudioControls();
+          });
+        });
+
+        document.getElementById('previewSoundBtn').addEventListener('click', () => {
+          playHydrationSound(settings.soundMuted ? 0.6 : settings.soundVolume, false, settings.soundTone);
+        });
+
+        // Multi-screen toggle & detect button
+        document.getElementById('multiScreenSwitch').addEventListener('click', () => {
+          settings.multiScreenPopupsEnabled = !settings.multiScreenPopupsEnabled;
+          saveSettings(settings);
+          renderPermissions();
+          if (settings.multiScreenPopupsEnabled && multiScreenPerm === 'prompt') {
+            requestMultiScreenDetails();
+          }
+        });
+
+        document.getElementById('detectScreensBtn').addEventListener('click', requestMultiScreenDetails);
+
+        document.querySelectorAll('[data-popup-size]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            settings.popupSizeMode = btn.getAttribute('data-popup-size') || 'fullscreen';
+            saveSettings(settings);
+            renderPermissions();
+          });
+        });
+
+        // Modal controls
+        document.getElementById('modalLogBtn').addEventListener('click', () => handlePopupLogAction(250));
+        document.getElementById('modalDismissBtn').addEventListener('click', dismissAlert);
+        document.getElementById('modalCloseX').addEventListener('click', dismissAlert);
+
+        // Cross-window BroadcastChannel sync
+        if (typeof BroadcastChannel !== 'undefined') {
+          try {
+            const syncCh = new BroadcastChannel(SYNC_CHANNEL);
+            syncCh.onmessage = (event) => {
+              const msg = event.data;
+              if (!msg) return;
+              if (msg.type === 'LOG_WATER') {
+                handlePopupLogAction(msg.amountMl || 250);
+              } else if (msg.type === 'DISMISS_ALERT') {
+                dismissAlert();
+              }
+            };
+          } catch {
+            // ignore
+          }
+        }
+
+        // Visibility & focus midnight / permission refresh
+        function handleFocusRefresh() {
+          if (document.visibilityState === 'visible') {
+            checkMidnightRollover();
+            if ('Notification' in window) {
+              notifPerm = Notification.permission;
+              renderPermissions();
+            }
+          }
+        }
+
+        window.addEventListener('focus', handleFocusRefresh);
+        document.addEventListener('visibilitychange', handleFocusRefresh);
+
+        // Boot
+        renderAll();
+        scheduleMidnightCheck();
+        queryMultiScreenPermission().then(renderPermissions);
+      })();
+    </script>
+  </body>
+</html>

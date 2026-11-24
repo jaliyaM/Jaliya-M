@@ -1,0 +1,6 @@
+{
+  "name": "Tide — Hydration Reminder",
+  "description": "A calm, compact desktop hydration tracker with customizable reminder timers, Web Audio water chimes, OS notifications, and multi-monitor popup alerts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
